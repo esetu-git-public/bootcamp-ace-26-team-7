@@ -1,1 +1,4 @@
 .astrivya
+venv/
+.venv/
+venv
