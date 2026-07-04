@@ -1,7 +1,8 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Surface Detection System",
+    page_title="Surface Detection System - Login",
+    page_icon="🔐",
     initial_sidebar_state="collapsed"
 )
 
@@ -12,8 +13,6 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
-st.set_page_config(page_title="Login", page_icon="🔐")
 
 VALID_EMAIL = "admin@surfacedetect.com"
 VALID_PASSWORD = "Admin@123"

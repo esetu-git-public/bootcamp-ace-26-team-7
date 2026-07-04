@@ -1,7 +1,8 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Surface Detection System",
+    page_title="Surface Detection System - Register",
+    page_icon="📝",
     initial_sidebar_state="collapsed"
 )
 
@@ -12,8 +13,6 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
-st.set_page_config(page_title="Register", page_icon="📝")
 
 st.title("📝 Register")
 

@@ -1,4 +1,38 @@
-.astrivya
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual environments
 venv/
 .venv/
-venv
+env/
+ENV/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Streamlit config / cache
+.streamlit/
+
+# Environment / local configs
+.env
+.env.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Project-specific patterns
+# Ignore all files in data/ except .gitkeep
+data/*
+!data/.gitkeep
+
+# Ignore model weight checkpoints except .gitkeep
+models/*
+!models/.gitkeep
+
+# Other tools
+.astrivya

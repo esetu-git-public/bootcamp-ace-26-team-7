@@ -1,10 +1,18 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Forgot Password",
+    page_title="Surface Detection System - Forgot Password",
     page_icon="🔒",
-    layout="centered"
+    initial_sidebar_state="collapsed"
 )
+
+st.markdown("""
+<style>
+[data-testid="stSidebar"] {
+    display: none;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.title("🔒 Forgot Password")
 
@@ -22,4 +30,4 @@ if st.button("Send Reset Link", use_container_width=True):
 st.divider()
 
 if st.button("⬅ Back to Login"):
-    st.switch_page("login.py")
+    st.switch_page("pages/login.py")
