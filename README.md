@@ -1,3 +1,15 @@
+---
+title: Surface Crack Detection
+emoji: 🚀
+colorFrom: red
+colorTo: red
+sdk: streamlit
+sdk_version: "1.58.0"
+app_file: app.py
+pinned: false
+tags: [streamlit, computer-vision, deep-learning]
+---
+
 <div align="center">
 
 # 🛣️ Surface Crack Detection
@@ -11,7 +23,7 @@
 [![HuggingFace](https://img.shields.io/badge/🤗%20Spaces-Live-yellow)](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-**Live Demo:** [huggingface.co/spaces/amruthjakku/surface-crack-detection](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
+**Live:** [huggingface.co/spaces/amruthjakku/surface-crack-detection](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
 
 </div>
 
@@ -21,13 +33,13 @@
 
 A multi-class classifier that detects **4 types of surface defects** from images using transfer learning on ResNet50 / EfficientNet-B0.
 
-| Defect Class | Samples | % of Dataset |
-|:------------|-------:|:------------:|
-| **Cracks** | 73 | 23.9% |
-| **Patch** | 42 | 13.7% |
-| **Potholes** | 91 | 29.7% |
-| **Surface Defects** | 100 | 32.7% |
-| **Total** | **306** | **100%** |
+| Defect Class        | Samples | % of Dataset |
+| :------------------ | ------: | :----------: |
+| **Cracks**          |      73 |    23.9%     |
+| **Patch**           |      42 |    13.7%     |
+| **Potholes**        |      91 |    29.7%     |
+| **Surface Defects** |     100 |    32.7%     |
+| **Total**           | **306** |   **100%**   |
 
 **Domain:** Manufacturing & Computer Vision  
 **Framework:** PyTorch  
@@ -75,18 +87,18 @@ flowchart LR
 
 ## 🏋️ Training Strategy
 
-| Phase | Backbone | Epochs | LR | Optimizer |
-|:------|:---------|:------:|:--:|:---------:|
-| **1 — Warmup** | Frozen | 5–10 | 1×10⁻³ | AdamW |
-| **2 — Fine-tune** | Unfreeze last 2 blocks | 15–25 | 1×10⁻⁵ | AdamW |
+| Phase             | Backbone               | Epochs |   LR   | Optimizer |
+| :---------------- | :--------------------- | :----: | :----: | :-------: |
+| **1 — Warmup**    | Frozen                 |  5–10  | 1×10⁻³ |   AdamW   |
+| **2 — Fine-tune** | Unfreeze last 2 blocks | 15–25  | 1×10⁻⁵ |   AdamW   |
 
-| Detail | Value |
-|:-------|:------|
-| **Loss Function** | Weighted CrossEntropy (inverse class frequency) |
-| **LR Scheduler** | CosineAnnealingLR |
-| **Early Stopping** | Patience = 7 epochs |
-| **Model Checkpoint** | Monitor validation F1 |
-| **Mixed Precision** | `torch.cuda.amp` (if GPU available) |
+| Detail               | Value                                           |
+| :------------------- | :---------------------------------------------- |
+| **Loss Function**    | Weighted CrossEntropy (inverse class frequency) |
+| **LR Scheduler**     | CosineAnnealingLR                               |
+| **Early Stopping**   | Patience = 7 epochs                             |
+| **Model Checkpoint** | Monitor validation F1                           |
+| **Mixed Precision**  | `torch.cuda.amp` (if GPU available)             |
 
 ---
 
@@ -144,10 +156,10 @@ python src/evaluate.py
 
 ## 🌐 Deployment
 
-| Platform | SDK | Sleep? | Setup |
-|:---------|:---:|:------:|:------|
-| **Hugging Face Spaces** | Streamlit | ❌ No sleep | `git push hf main` |
-| **Docker (any host)** | Docker | Depends on host | `docker build -t crack-detection . && docker run -p 8501:8501 crack-detection` |
+| Platform                |    SDK    |     Sleep?      | Setup                                                                          |
+| :---------------------- | :-------: | :-------------: | :----------------------------------------------------------------------------- |
+| **Hugging Face Spaces** | Streamlit |   ❌ No sleep   | `git push hf main`                                                             |
+| **Docker (any host)**   |  Docker   | Depends on host | `docker build -t crack-detection . && docker run -p 8501:8501 crack-detection` |
 
 **Live:** [huggingface.co/spaces/amruthjakku/surface-crack-detection](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
 
@@ -155,6 +167,6 @@ python src/evaluate.py
 
 <div align="center">
 
-Built with ❤️ by **Team 7 — ACE Bootcamp 2.6**
+Built with ❤️ by **Team 7 — ACE Bootcamp**
 
 </div>
