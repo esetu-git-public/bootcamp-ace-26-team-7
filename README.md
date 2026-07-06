@@ -101,6 +101,25 @@ flowchart LR
 
 ---
 
+## 🏋️ Training Session 1
+
+**Test Set — 49 images**
+
+| Accuracy  | Weighted F1 | Macro F1  |
+| :-------: | :---------: | :-------: |
+| **79.6%** |  **79.6%**  | **78.3%** |
+
+| Class           | Precision |  Recall  |    F1    |
+| :-------------- | :-------: | :------: | :------: |
+| Cracks          |   1.00    |   0.67   |   0.80   |
+| Patch           |   0.71    |   0.71   |   0.71   |
+| **Potholes**    |   0.68    | **1.00** | **0.81** |
+| Surface Defects |   0.92    |   0.73   |   0.81   |
+
+> ⭐ Potholes at **100% recall** — every pothole detected.
+
+---
+
 ## 🏛️ Project Structure
 
 ```
@@ -145,11 +164,36 @@ streamlit run app.py
 python src/prepare_data.py
 python src/train.py
 python src/evaluate.py
-```
 
-**Login Credentials (hardcoded):**  
-`Email:` admin@surfacedetect.com  
-`Password:` Admin@123
+---
+
+## 📊 Results
+
+**Test Set Performance** (49 images, 70/15/15 split)
+
+| Metric | Score |
+|:-------|:-----:|
+| **Accuracy** | **79.6%** |
+| **Weighted F1** | **79.6%** |
+| **Macro F1** | **78.3%** |
+
+| Class | Precision | Recall | F1 | Support |
+|:------|:--------:|:------:|:--:|:-------:|
+| Cracks | 1.00 | 0.67 | 0.80 | 12 |
+| Patch | 0.71 | 0.71 | 0.71 | 7 |
+| **Potholes** ⭐ | 0.68 | **1.00** | **0.81** | 15 |
+| Surface Defects | 0.92 | 0.73 | 0.81 | 15 |
+
+> **Potholes achieve 100% recall** — every pothole image is correctly identified.
+> Weighted loss with a 1.5× Pothole priority multiplier emphasizes this class during training.
+
+### Visualizations
+
+| Training Curves | Confusion Matrix |
+|:---------------:|:----------------:|
+| ![Training Curves](reports/training_curves.png) | ![Confusion Matrix](reports/confusion_matrix.png) |
+
+[Classification Report](reports/classification_report.txt)
 
 ---
 
@@ -169,3 +213,4 @@ python src/evaluate.py
 Built with ❤️ by **Team 7 — ACE Bootcamp**
 
 </div>
+```
