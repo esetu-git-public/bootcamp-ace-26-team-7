@@ -54,3 +54,6 @@ reports/*
 data/*
 !data/**/.gitkeep
 /
+
+#ignore all eda outputs, but keep folder structure markers
+notebooks/eda_outputs/
