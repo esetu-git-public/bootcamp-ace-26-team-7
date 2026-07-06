@@ -34,5 +34,15 @@ data/*
 models/*
 !models/.gitkeep
 
+# Jupyter executed notebooks (outputs)
+notebooks/*_executed.ipynb
+
+# Raw image dataset (large ~223 MB)
+Surface Crack Detection/
+
+# Generated reports, figures, logs
+reports/*
+!reports/.gitkeep
+
 # Other tools
 .astrivya
