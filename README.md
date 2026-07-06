@@ -1,18 +1,3 @@
----
-title: Surface Crack Detection
-emoji: 🚀
-colorFrom: red
-colorTo: red
-sdk: streamlit
-sdk_version: "1.58.0"
-app_file: app.py
-pinned: false
-tags:
-- streamlit
-- computer-vision
-- deep-learning
----
-
 <div align="center">
 
 # 🛣️ Surface Crack Detection
