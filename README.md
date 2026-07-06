@@ -20,7 +20,6 @@ pinned: false
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.58-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.139-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![HuggingFace](https://img.shields.io/badge/🤗%20Spaces-Live-yellow)](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 **Live:** [huggingface.co/spaces/amruthjakku/surface-crack-detection](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
 
@@ -164,7 +163,7 @@ streamlit run app.py
 python src/prepare_data.py
 python src/train.py
 python src/evaluate.py
-
+```
 ---
 
 ## 📊 Results
@@ -186,14 +185,6 @@ python src/evaluate.py
 
 > **Potholes achieve 100% recall** — every pothole image is correctly identified.
 > Weighted loss with a 1.5× Pothole priority multiplier emphasizes this class during training.
-
-### Visualizations
-
-| Training Curves | Confusion Matrix |
-|:---------------:|:----------------:|
-| ![Training Curves](reports/training_curves.png) | ![Confusion Matrix](reports/confusion_matrix.png) |
-
-[Classification Report](reports/classification_report.txt)
 
 ---
 
