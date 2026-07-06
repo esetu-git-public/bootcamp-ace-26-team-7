@@ -42,7 +42,7 @@ A multi-class classifier that detects **4 types of surface defects** from images
 
 **Domain:** Manufacturing & Computer Vision  
 **Framework:** PyTorch  
-**Bootcamp:** ACE 2.6 — Team 7
+**Bootcamp:** ACE — Team 7
 
 ---
 

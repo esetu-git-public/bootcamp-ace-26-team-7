@@ -30,3 +30,6 @@ class Config:
     # Models folder
     MODEL_SAVE_PATH = "models/best_model.pth"
     REPORTS_DIR = "reports"
+    
+    # Pothole priority (class index 2) — extra weight multiplier
+    POTHOLE_PRIORITY = 1.5

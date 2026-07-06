@@ -5,6 +5,7 @@ import torch.optim as optim
 from src.config import Config
 from src.dataset import get_dataloaders
 from src.model import get_resnet50, SimpleCNN
+from src.utils import plot_training_curves
 
 def calculate_class_weights(loader):
     """Computes inverse class frequencies to handle imbalanced datasets."""
@@ -19,6 +20,8 @@ def calculate_class_weights(loader):
         return torch.ones(Config.NUM_CLASSES).to(Config.DEVICE)
         
     weights = [total_samples / (Config.NUM_CLASSES * count) if count > 0 else 1.0 for count in class_counts]
+    # Apply Pothole priority multiplier (class index 2)
+    weights[2] *= Config.POTHOLE_PRIORITY
     return torch.tensor(weights, dtype=torch.float).to(Config.DEVICE)
 
 def train_epoch(model, loader, criterion, optimizer):
@@ -74,14 +77,21 @@ def run_training():
     model = get_resnet50(num_classes=Config.NUM_CLASSES, pretrained=True, freeze_backbone=True)
     model = model.to(Config.DEVICE)
     
+    train_losses, val_losses = [], []
+    train_accs, val_accs = [], []
+    
     # Phase 1: Warmup
     print("--- Phase 1: Warmup Training ---")
     optimizer = optim.AdamW(model.fc.parameters(), lr=Config.LEARNING_RATE)
     best_val_loss = float("inf")
-    
+
     for epoch in range(Config.EPOCHS_WARMUP):
         train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer)
         val_loss, val_acc = validate(model, val_loader, criterion)
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)
+        train_accs.append(train_acc)
+        val_accs.append(val_acc)
         print(f"Warmup Epoch {epoch+1}/{Config.EPOCHS_WARMUP} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f}")
         
     # Phase 2: Fine-tuning
@@ -96,6 +106,10 @@ def run_training():
     for epoch in range(Config.EPOCHS_FINE_TUNE):
         train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer)
         val_loss, val_acc = validate(model, val_loader, criterion)
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)
+        train_accs.append(train_acc)
+        val_accs.append(val_acc)
         print(f"Fine-Tune Epoch {epoch+1}/{Config.EPOCHS_FINE_TUNE} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f}")
         
         # Save best model
@@ -104,6 +118,10 @@ def run_training():
             os.makedirs(os.path.dirname(Config.MODEL_SAVE_PATH), exist_ok=True)
             torch.save(model.state_dict(), Config.MODEL_SAVE_PATH)
             print(f"Saved new best model checkpoint to {Config.MODEL_SAVE_PATH}")
+    
+    # Plot and save training curves
+    plot_training_curves(train_losses, val_losses, train_accs, val_accs,
+                         os.path.join(Config.REPORTS_DIR, "training_curves.png"))
 
 if __name__ == "__main__":
     run_training()
