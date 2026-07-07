@@ -19,6 +19,21 @@ selected_class = st.sidebar.radio(
     "Select Class",
     ["POTHOLES", "CRACK", "PATCH", "SURFACE DEFECTS"]
 )
+# ---------------- LOGOUT BUTTON ----------------
+st.markdown("""
+<style>
+div[data-testid="stButton"]{
+    margin-top: -40px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns([17, 1])
+
+with col2:
+    if st.button("Logout"):
+        st.session_state.clear()      # Clear all session data
+        st.switch_page("pages/login.py")    # Redirect to Login page
 
 # ---------------- MAIN TITLE ----------------
 st.markdown(
