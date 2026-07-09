@@ -1,9 +1,13 @@
+import os
 import uuid as _uuid
 
-ADMIN_EMAIL = "admin@surfacedetect.com"
-ADMIN_PASSWORD = "Admin@123"
-ADMIN_NAME = "Admin"
+from dotenv import load_dotenv
 
+load_dotenv()
+
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+ADMIN_NAME = os.getenv("ADMIN_NAME", "Admin")
 
 def register_user(email: str, password: str, full_name: str) -> dict:
     return {
