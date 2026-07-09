@@ -56,14 +56,14 @@ if uploaded_file:
 
 st.write("---")
 
-# ---------------- DATA PROCESSED ----------------
-st.header("Data Processed")
-st.write({
-    "Total Images": 306,
-    "Classes": ["Cracks", "Patch", "Potholes", "Surface Defects"],
-    "Preprocessing Steps": ["Resize 224x224", "Normalization", "Augmentation (Flip, Rotate, ColorJitter)"]
-})
-st.write("---")
+# # ---------------- DATA PROCESSED ----------------
+#st.header("Data Processed")
+#st.write({
+#    "Total Images": 306,
+#    "Classes": ["Cracks", "Patch", "Potholes", "Surface Defects"],
+#    "Preprocessing Steps": ["Resize 224x224", "Normalization", "Augmentation (Flip, Rotate, ColorJitter)"]
+#})
+#st.write("---")
 
 # ---------------- PREDICTION ----------------
 st.header("Prediction")
