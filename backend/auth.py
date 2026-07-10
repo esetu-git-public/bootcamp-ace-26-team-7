@@ -1,4 +1,6 @@
+import streamlit as st
 import uuid as _uuid
+from backend.database import get_supabase
 
 ADMIN_EMAIL = "admin@surfacedetect.com"
 ADMIN_PASSWORD = "Admin@123"
@@ -31,3 +33,41 @@ def login_user(email: str, password: str) -> dict:
 
 def send_reset_email(email: str) -> dict:
     return {"success": True, "message": "Password reset link sent to your email."}
+
+
+def require_login():
+    """Call at the top of every protected Streamlit page.
+    Redirects to the login page if no valid session exists."""
+    if not st.session_state.get("access_token"):
+        st.warning("Please log in to continue.")
+        st.switch_page("pages/login.py")
+        st.stop()
+
+
+def get_github_login_url(redirect_to: str) -> str:
+    """Returns the URL to send the user to, to start GitHub login via Supabase.
+    redirect_to = the page in your app Supabase should send the user back to
+    after they approve on GitHub (e.g. your Space's live URL)."""
+    supabase = get_supabase()
+    res = supabase.auth.sign_in_with_oauth({
+        "provider": "github",
+        "options": {"redirect_to": redirect_to},
+    })
+    return res.url
+
+
+def complete_github_login(auth_code: str) -> dict:
+    """Call this after GitHub/Supabase redirects back with ?code=... in the URL.
+    Exchanges that code for a real logged-in session."""
+    supabase = get_supabase()
+    session = supabase.auth.exchange_code_for_session({"auth_code": auth_code})
+    return {
+        "success": True,
+        "access_token": session.session.access_token,
+        "user": {
+            "id": session.user.id,
+            "email": session.user.email,
+            "full_name": session.user.user_metadata.get("full_name")
+                or session.user.user_metadata.get("user_name"),  # GitHub username fallback
+        },
+    }
