@@ -50,6 +50,8 @@ jobs:
         run: |
           git remote add hf https://amruthjakku:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/amruthjakku/surface-crack-detection
           git checkout --orphan clean-deploy
+          git config user.email "ci@deploy.bot"
+          git config user.name "CI Deploy"
           git add -A
-          git commit -m "Deploy $(date -u +'%Y-%m-%d %H:%M:%S')"
+          git commit -m "Deploy $(date -u +'%Y-%m-%d %H:%M:%S')" --allow-empty
           git push hf clean-deploy:main --force
