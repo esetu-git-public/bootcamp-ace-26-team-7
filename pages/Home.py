@@ -12,7 +12,7 @@ with st.sidebar:
     if st.button("Logout"):
         st.session_state.pop("access_token", None)
         st.session_state.pop("user", None)
-        st.switch_page("pages/login.py")
+        st.switch_page("login")
 
 hide_streamlit_style = """
 <style>
@@ -45,7 +45,7 @@ col1, col2 = st.columns([17, 1])
 with col2:
     if st.button("Logout"):
         st.session_state.clear()      # Clear all session data
-        st.switch_page("pages/login.py")    # Redirect to Login page
+        st.switch_page("login")    # Redirect to Login page
 
 # ---------------- MAIN TITLE ----------------
 st.markdown(

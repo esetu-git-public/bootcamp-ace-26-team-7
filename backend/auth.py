@@ -44,7 +44,7 @@ def require_login():
     Redirects to the login page if no valid session exists."""
     if not st.session_state.get("access_token"):
         st.warning("Please log in to continue.")
-        st.switch_page("pages/login.py")
+        st.switch_page("login")
         st.stop()
 
 

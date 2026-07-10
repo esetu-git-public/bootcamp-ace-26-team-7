@@ -38,7 +38,7 @@ if "code" in query_params:
             st.session_state["user"] = result["user"]
             st.query_params.clear()
             st.success("Login Successful ✅")
-            st.switch_page("pages/Home.py")
+            st.switch_page("home")
     except Exception as e:
         st.error(f"GitHub login failed: {e}")
 
@@ -56,7 +56,7 @@ if st.button("Login", use_container_width=True):
                 st.session_state["access_token"] = result["access_token"]
                 st.session_state["user"] = result["user"]
                 st.success("Login Successful ✅")
-                st.switch_page("pages/Home.py")
+                st.switch_page("home")
             else:
                 st.error("Invalid email or password")
         except Exception as e:
