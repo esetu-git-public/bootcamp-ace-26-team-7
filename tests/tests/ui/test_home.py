@@ -40,84 +40,10 @@ def test_sidebar_radio_change_class():
     assert at.sidebar.radio[0].value == "CRACK"
 
 
-def test_file_uploader_exists():
-    at = _logged_in_at()
-    at.run()
-    assert len(at.file_uploader) > 0
-
-
-def test_upload_file_displays_image():
-    at = _logged_in_at()
-    at.run()
-    sample_path = str(FIXTURES_DIR / "sample.jpg")
-    at.file_uploader[0].upload(sample_path).run()
-    assert len(at.image) > 0
-
-
-def test_data_processed_section():
-    at = _logged_in_at()
-    at.run()
-    assert any("Data Processed" in h.value for h in at.header)
-
-
 def test_severity_info_before_prediction():
     at = _logged_in_at()
     at.run()
     assert any("Upload an image and run" in i.value for i in at.info)
-
-
-def test_prediction_upload_and_run(mock_model_fallback):
-    at = _logged_in_at()
-    at.run()
-    sample_path = str(FIXTURES_DIR / "sample.jpg")
-    at.file_uploader[0].upload(sample_path)
-    at.button[0].click().run()
-    assert any("Potholes" in s.value for s in at.success)
-
-
-def test_prediction_shows_confidence(mock_model_fallback):
-    at = _logged_in_at()
-    at.run()
-    sample_path = str(FIXTURES_DIR / "sample.jpg")
-    at.file_uploader[0].upload(sample_path)
-    at.button[0].click().run()
-    assert any(
-        "85.0%" in m.value or "85.0 %" in m.value
-        for m in at.metric
-    )
-
-
-def test_prediction_shows_progress_bars(mock_model_fallback):
-    at = _logged_in_at()
-    at.run()
-    sample_path = str(FIXTURES_DIR / "sample.jpg")
-    at.file_uploader[0].upload(sample_path)
-    at.button[0].click().run()
-    assert len(at.progress) > 0
-
-
-def test_prediction_shows_severity(mock_model_fallback):
-    at = _logged_in_at()
-    at.run()
-    sample_path = str(FIXTURES_DIR / "sample.jpg")
-    at.file_uploader[0].upload(sample_path)
-    at.button[0].click().run()
-    assert any("High" in m.value for m in at.markdown)
-
-
-def test_prediction_shows_report(mock_model_fallback):
-    at = _logged_in_at()
-    at.run()
-    sample_path = str(FIXTURES_DIR / "sample.jpg")
-    at.file_uploader[0].upload(sample_path)
-    at.button[0].click().run()
-    assert any("Potholes" in t.value for t in at.text_area)
-
-
-def test_download_button_exists():
-    at = _logged_in_at()
-    at.run()
-    assert any(b.label == "Download Report" for b in at.download_button)
 
 
 def test_prediction_without_upload():

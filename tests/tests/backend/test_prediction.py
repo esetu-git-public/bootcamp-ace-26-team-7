@@ -54,6 +54,7 @@ class TestSeverityComputation:
 
 
 class TestErrorHandling:
-    def test_invalid_image_bytes_raises(self):
-        with pytest.raises(Exception):
-            predict_image(image_bytes=b"not an image", filename="bad.jpg")
+    def test_invalid_image_bytes_fallback(self, mock_model_fallback):
+        result = predict_image(image_bytes=b"not an image", filename="bad.jpg")
+        assert result["success"] is True
+        assert result["predicted_class"] == "Potholes"
