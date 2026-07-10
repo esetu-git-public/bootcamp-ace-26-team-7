@@ -1,7 +1,18 @@
 import streamlit as st
 from backend.prediction import predict_image
+from backend.auth import require_login
 
 st.set_page_config(layout="wide")
+require_login()
+
+with st.sidebar:
+    user = st.session_state.get("user", {})
+    st.write(f"👤 {user.get('full_name', 'User')}")
+    st.caption(user.get("email", ""))
+    if st.button("Logout"):
+        st.session_state.pop("access_token", None)
+        st.session_state.pop("user", None)
+        st.switch_page("pages/login.py")
 
 hide_streamlit_style = """
 <style>
