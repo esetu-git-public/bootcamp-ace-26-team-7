@@ -22,9 +22,12 @@ def _load_model():
     if _model is not None:
         return _model, _transform
 
-    from torchvision import transforms
-    from src.model import get_resnet50
-    from src.config import Config
+    try:
+        from torchvision import transforms
+        from src.model import get_resnet50
+        from src.config import Config
+    except ImportError:
+        return None, None
 
     _transform = transforms.Compose([
         transforms.Resize((Config.IMAGE_SIZE, Config.IMAGE_SIZE)),
@@ -56,9 +59,9 @@ def _load_model():
 
 def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
     model, transform = _load_model()
-    pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
     if model is not None:
+        pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         import torch
         input_tensor = transform(pil_image).unsqueeze(0).to("cpu")
         with torch.no_grad():

@@ -37,9 +37,12 @@ def mock_model_fallback(monkeypatch):
     def mock_download(*args, **kwargs):
         raise Exception("Simulated network error")
 
-    monkeypatch.setattr(
-        "huggingface_hub.hf_hub_download", mock_download
-    )
+    try:
+        monkeypatch.setattr(
+            "huggingface_hub.hf_hub_download", mock_download
+        )
+    except ModuleNotFoundError:
+        pass
 
     import backend.prediction as pred
     pred._model = None

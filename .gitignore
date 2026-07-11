@@ -60,3 +60,6 @@ data/*
 
 #ignore all eda outputs, but keep folder structure markers
 notebooks/eda_outputs/
+
+# Large binary files that are rejected by Hugging Face Spaces
+*.pdf

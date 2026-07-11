@@ -10,7 +10,7 @@ def test_landing_page_renders():
 def test_title_displayed():
     at = AppTest.from_file("app.py")
     at.run()
-    assert "Surface Crack Detection System" in at.markdown[0].value
+    assert "Surface Crack Detection System" in at.markdown[1].value
 
 
 def test_login_button_exists():
