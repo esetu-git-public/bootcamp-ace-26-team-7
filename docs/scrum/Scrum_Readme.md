@@ -25,7 +25,8 @@
 |-----|-------|-----------|---------------|----------------|----------------|-----------|
 | Day 6 | Sprint execution | Traning model, assisted team | Prepared E2E scripts,gave sprint board demo ,working on #14 issue| Prepared and gave sprint review and product demo | Added logout feature,working on data proceessing of home page | Audit authentucation work,documentation,created issues and woking on #15 issue|
 | Day 7| sprint execution | focused on dockerising the product,vadilated current features and assisted ci pipelines| Worked on issues ,conducted stand up and monitored team progess |Reviewed the backend API connection and created single command to run whole project | Working on #13 issue and coorperated with team| Working on #15 issue and coorporated with the team|   
-| Day 8| sprint execution | Worked on issues and coorperated with team | Conducted stand up and gave product demo| Reviewed the backend API and worked in issues | Worked on issues and coorperated with team| Solved issue #15 and coordinated with team | 
+| Day 8| sprint execution | Worked on issues and coorperated with team | Conducted stand up and gave product demo| Reviewed the backend API and worked in issues | Worked on issues and coorperated with team| Solved issue #15 and coordinated with team |
+| Day 9| sprint execution | Worked on issues and model training | Conducted stand up and solved issues| Reviewed the backend API and worked in issues | Worked on UI issues and coorperated with team| Solved issues and coorperate with team  | 
 ## Scrum Master's Responsibilities
 
 - Conducted Sprint Planning.
@@ -53,4 +54,4 @@
 
 ---
 
-**Last Updated:** Day 8
+**Last Updated:** Day 9
