@@ -6,7 +6,7 @@ FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 
 
 def _logged_in_at():
-    at = AppTest.from_file("pages/Home.py")
+    at = AppTest.from_file("pages/home.py")
     at.session_state["access_token"] = "hardcoded-admin-token"
     at.session_state["user"] = {"email": "admin@surfacedetect.com", "full_name": "Admin"}
     return at
