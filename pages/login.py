@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from backend.auth import login_user, get_github_login_url, complete_github_login
 
@@ -25,8 +26,8 @@ st.markdown("""
 st.title("🛣️ Surface Detection System")
 st.subheader("Login")
 
-# Replace this with your deployed Space URL
-APP_URL = "https://amruthjakku-surface-crack-detection.hf.space/login"
+# This must match your Space's live URL + this page's route.
+APP_URL = os.getenv("APP_URL", "https://amruthjakku-surface-crack-detection.hf.space/login")
 
 # ----------------------------
 # GitHub OAuth Callback
