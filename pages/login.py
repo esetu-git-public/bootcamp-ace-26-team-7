@@ -45,7 +45,7 @@ if "code" in query_params:
 
             st.success("Login Successful ✅")
 
-            st.switch_page("pages/Home.py")
+            st.switch_page("pages/home.py")
 
         else:
             st.error("GitHub Login Failed")
