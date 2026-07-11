@@ -6,7 +6,7 @@ import torch.optim as optim
 import numpy as np
 from src.config import Config
 from src.dataset import get_dataloaders
-from src.model import get_resnet50, SimpleCNN
+from src.model import get_model, unfreeze_for_finetune
 from src.utils import plot_training_curves
 
 def calculate_class_weights(loader):
@@ -90,8 +90,8 @@ def run_training():
     criterion = nn.CrossEntropyLoss(weight=class_weights)
     
     # Instantiate Model
-    print("Initializing ResNet50 Transfer Learning model...")
-    model = get_resnet50(num_classes=Config.NUM_CLASSES, pretrained=True, freeze_backbone=True)
+    print(f"Initializing {Config.MODEL_NAME} Transfer Learning model...")
+    model = get_model(model_name=Config.MODEL_NAME, num_classes=Config.NUM_CLASSES, pretrained=True, freeze_backbone=True)
     model = model.to(Config.DEVICE)
     
     train_losses, val_losses = [], []
@@ -120,9 +120,7 @@ def run_training():
         
     # Phase 2: Fine-tuning
     print("--- Phase 2: Fine-Tuning Training ---")
-    for name, param in model.named_parameters():
-        if "layer4" in name or "fc" in name:
-            param.requires_grad = True
+    unfreeze_for_finetune(model, Config.MODEL_NAME)
             
     optimizer = optim.AdamW(model.parameters(), lr=Config.FINE_TUNE_LR)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(

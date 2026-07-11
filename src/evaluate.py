@@ -6,14 +6,14 @@ import seaborn as sns
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
 from src.config import Config
 from src.dataset import get_dataloaders
-from src.model import get_resnet50
+from src.model import get_model
 
 def run_evaluation():
     """Runs model validation on the test subset, saving the classification report and matrix."""
     _, _, test_loader = get_dataloaders()
     
     # Load model
-    model = get_resnet50(num_classes=Config.NUM_CLASSES, pretrained=False)
+    model = get_model(model_name=Config.MODEL_NAME, num_classes=Config.NUM_CLASSES, pretrained=False)
     
     if not os.path.exists(Config.MODEL_SAVE_PATH):
         print(f"Error: Model checkpoint not found at '{Config.MODEL_SAVE_PATH}'. Train the model first.")

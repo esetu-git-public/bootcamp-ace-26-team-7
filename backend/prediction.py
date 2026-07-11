@@ -24,7 +24,7 @@ def _load_model():
 
     try:
         from torchvision import transforms
-        from src.model import get_resnet50
+        from src.model import get_model
         from src.config import Config
     except ImportError:
         return None, None
@@ -35,7 +35,7 @@ def _load_model():
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-    _model = get_resnet50(num_classes=Config.NUM_CLASSES, pretrained=False)
+    _model = get_model(model_name=Config.MODEL_NAME, num_classes=Config.NUM_CLASSES, pretrained=False)
     if not os.path.exists(MODEL_PATH):
         try:
             from huggingface_hub import hf_hub_download

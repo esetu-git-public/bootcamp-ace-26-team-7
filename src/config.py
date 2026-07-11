@@ -16,6 +16,9 @@ class Config:
     # Stratified split ratios
     SPLIT_RATIOS = {"train": 0.70, "val": 0.15, "test": 0.15}
     
+    # Model selection
+    MODEL_NAME = "resnet50"  # Options: "resnet50", "efficientnet_b0", "vit_b_16"
+    
     # Hyperparameters
     BATCH_SIZE = 16
     LEARNING_RATE = 1e-3
