@@ -1,5 +1,11 @@
 import os
-import torch
+
+try:
+    import torch
+    _TORCH_AVAILABLE = True
+except ModuleNotFoundError:
+    _TORCH_AVAILABLE = False
+    torch = None
 
 class Config:
     # Dataset configurations
@@ -48,7 +54,10 @@ class Config:
     TTA_ENABLED = True
     
     # Hardware device configuration
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if _TORCH_AVAILABLE:
+        DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    else:
+        DEVICE = None
     
     # Models folder
     MODELS_DIR = "models"
