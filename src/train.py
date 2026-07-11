@@ -1,9 +1,11 @@
 import os
 import random
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
+import wandb
 from src.config import Config
 from src.dataset import get_dataloaders
 from src.model import get_model, unfreeze_for_finetune
@@ -82,7 +84,8 @@ def validate(model, loader, criterion):
             
     return running_loss / total, correct / total
 
-def run_training():
+def run_training(model_name=None):
+    model_name = model_name or Config.MODEL_NAME
     train_loader, val_loader, test_loader = get_dataloaders()
     
     # Calculate weighted loss for class imbalance
@@ -90,12 +93,36 @@ def run_training():
     criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=Config.LABEL_SMOOTHING)
     
     # Instantiate Model
-    print(f"Initializing {Config.MODEL_NAME} Transfer Learning model...")
-    model = get_model(model_name=Config.MODEL_NAME, num_classes=Config.NUM_CLASSES, pretrained=True, freeze_backbone=True)
+    print(f"Initializing {model_name} Transfer Learning model...")
+    model = get_model(model_name=model_name, num_classes=Config.NUM_CLASSES, pretrained=True, freeze_backbone=True)
     model = model.to(Config.DEVICE)
     
     train_losses, val_losses = [], []
     train_accs, val_accs = [], []
+    
+    # wandb init
+    if Config.WANDB_ENABLED:
+        run_name = f"{model_name}-{time.strftime('%Y%m%d-%H%M%S')}"
+        wandb.init(
+            project=Config.WANDB_PROJECT,
+            entity=Config.WANDB_ENTITY,
+            name=run_name,
+            config={
+                "model": model_name,
+                "batch_size": Config.BATCH_SIZE,
+                "lr_warmup": Config.LEARNING_RATE,
+                "lr_finetune": Config.FINE_TUNE_LR,
+                "epochs_warmup": Config.EPOCHS_WARMUP,
+                "epochs_finetune": Config.EPOCHS_FINE_TUNE,
+                "label_smoothing": Config.LABEL_SMOOTHING,
+                "mixup_alpha": Config.MIXUP_ALPHA,
+                "early_stop_patience": Config.EARLY_STOP_PATIENCE,
+                "scheduler_patience": Config.SCHEDULER_PATIENCE,
+                "pothole_priority": Config.POTHOLE_PRIORITY,
+                "tta_enabled": Config.TTA_ENABLED,
+            }
+        )
+        wandb.watch(model, log="gradients", log_freq=10)
     
     # Phase 1: Warmup
     print("--- Phase 1: Warmup Training ---")
@@ -117,10 +144,20 @@ def run_training():
         current_lr = optimizer.param_groups[0]["lr"]
         print(f"Warmup Epoch {epoch+1}/{Config.EPOCHS_WARMUP} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f} | LR: {current_lr:.2e}")
         scheduler.step(val_loss)
+        if Config.WANDB_ENABLED:
+            wandb.log({
+                "phase": "warmup",
+                "epoch": epoch + 1,
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                "train_acc": train_acc,
+                "val_acc": val_acc,
+                "learning_rate": current_lr,
+            })
         
     # Phase 2: Fine-tuning
     print("--- Phase 2: Fine-Tuning Training ---")
-    unfreeze_for_finetune(model, Config.MODEL_NAME)
+    unfreeze_for_finetune(model, model_name)
             
     optimizer = optim.AdamW(model.parameters(), lr=Config.FINE_TUNE_LR)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
@@ -141,21 +178,38 @@ def run_training():
         scheduler.step(val_loss)
         
         # Save best model
+        model_path = Config.get_model_path(model_name)
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             early_stop_counter = 0
-            os.makedirs(os.path.dirname(Config.get_model_path()), exist_ok=True)
-            torch.save(model.state_dict(), Config.get_model_path())
-            print(f"Saved new best model checkpoint to {Config.get_model_path()}")
+            os.makedirs(os.path.dirname(model_path), exist_ok=True)
+            torch.save(model.state_dict(), model_path)
+            print(f"Saved new best model checkpoint to {model_path}")
         else:
             early_stop_counter += 1
             if early_stop_counter >= Config.EARLY_STOP_PATIENCE:
                 print(f"Early stopping triggered after {epoch+1} fine-tune epochs (no improvement for {Config.EARLY_STOP_PATIENCE} epochs).")
                 break
+        
+        if Config.WANDB_ENABLED:
+            wandb.log({
+                "phase": "finetune",
+                "epoch": epoch + 1 + Config.EPOCHS_WARMUP,
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                "train_acc": train_acc,
+                "val_acc": val_acc,
+                "learning_rate": current_lr,
+                "best_val_loss": best_val_loss,
+            })
     
     # Plot and save training curves
-    plot_training_curves(train_losses, val_losses, train_accs, val_accs,
-                         os.path.join(Config.REPORTS_DIR, "training_curves.png"))
+    curves_path = os.path.join(Config.REPORTS_DIR, f"training_curves_{model_name}.png")
+    plot_training_curves(train_losses, val_losses, train_accs, val_accs, curves_path)
+    
+    if Config.WANDB_ENABLED:
+        wandb.log({"training_curves": wandb.Image(curves_path)})
+        wandb.finish()
 
 if __name__ == "__main__":
     run_training()

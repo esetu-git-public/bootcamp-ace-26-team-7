@@ -20,6 +20,7 @@ pinned: false
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.58-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.139-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![HuggingFace](https://img.shields.io/badge/🤗%20Spaces-Live-yellow)](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
+[![wandb](https://img.shields.io/badge/wandb-Dashboard-blue?logo=weightsandbiases)](https://wandb.ai/amruthjakku/surface-crack-detection)
 
 **Live:** [huggingface.co/spaces/amruthjakku/surface-crack-detection](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
 
@@ -94,22 +95,21 @@ flowchart LR
 
 ---
 
-## 🏋️ Training Session 1
+## 🏋️ Training Environment
 
-**Test Set — 49 images**
+**Platform:** Google Colab (free T4 GPU) — [Open Notebook](notebooks/04_train_wandb.ipynb)
+**Tracking:** [Weights & Biases Dashboard](https://wandb.ai/amruthjakku/surface-crack-detection)
 
-| Accuracy  | Weighted F1 | Macro F1  |
-| :-------: | :---------: | :-------: |
-| **79.6%** |  **79.6%**  | **78.3%** |
+### Model Performance Comparison
 
-| Class           | Precision |  Recall  |    F1    |
-| :-------------- | :-------: | :------: | :------: |
-| Cracks          |   1.00    |   0.67   |   0.80   |
-| Patch           |   0.71    |   0.71   |   0.71   |
-| **Potholes**    |   0.68    | **1.00** | **0.81** |
-| Surface Defects |   0.92    |   0.73   |   0.81   |
+| Run | Model | Accuracy | Weighted F1 | Date | wandb Link |
+|:----|:------|:--------:|:-----------:|:----:|:----------:|
+| 1 | ResNet50 | 79.6% | 79.6% | Jul 2026 | — |
+| 2 | EfficientNet-B0 | — | — | — | — |
+| 3 | ViT-B/16 | — | — | — | — |
+| 4 | **Ensemble** (R50+Eff) | — | — | — | — |
 
-> ⭐ Potholes at **100% recall** — every pothole detected.
+> Rows populate after each training session. Click wandb links for live charts & confusion matrices.
 
 ---
 
@@ -162,13 +162,11 @@ python src/evaluate.py
 
 ## 📊 Results
 
-**Test Set Performance** (49 images, 70/15/15 split)
+See **Model Performance Comparison** table above for all training runs tracked via wandb.
 
-| Metric | Score |
-|:-------|:-----:|
-| **Accuracy** | **79.6%** |
-| **Weighted F1** | **79.6%** |
-| **Macro F1** | **78.3%** |
+### Session 1 — ResNet50 (Baseline)
+
+**Test Set — 49 images** | Accuracy: **79.6%** | Weighted F1: **79.6%** | Macro F1: **78.3%**
 
 | Class | Precision | Recall | F1 | Support |
 |:------|:--------:|:------:|:--:|:-------:|

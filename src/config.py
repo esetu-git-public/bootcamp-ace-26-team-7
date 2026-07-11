@@ -61,3 +61,11 @@ class Config:
     
     # Pothole priority (class index 2) — extra weight multiplier
     POTHOLE_PRIORITY = 1.5
+    
+    # Weights & Biases
+    WANDB_ENABLED = False
+    WANDB_PROJECT = "surface-crack-detection"
+    WANDB_ENTITY = None
+
+    # HuggingFace Hub
+    HF_MODEL_REPO = "amruthjakku/surface-crack-detection-model"
