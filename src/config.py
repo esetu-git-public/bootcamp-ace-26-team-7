@@ -18,6 +18,7 @@ class Config:
     
     # Model selection
     MODEL_NAME = "resnet50"  # Options: "resnet50", "efficientnet_b0", "vit_b_16"
+    ENSEMBLE_MODELS = ["resnet50", "efficientnet_b0"]  # Used when ensemble=True
     
     # Hyperparameters
     BATCH_SIZE = 16
@@ -44,8 +45,13 @@ class Config:
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     # Models folder
-    MODEL_SAVE_PATH = "models/best_model.pth"
+    MODELS_DIR = "models"
     REPORTS_DIR = "reports"
+
+    @staticmethod
+    def get_model_path(model_name=None):
+        name = model_name or Config.MODEL_NAME
+        return os.path.join(Config.MODELS_DIR, f"{name}_best.pth")
     
     # Pothole priority (class index 2) — extra weight multiplier
     POTHOLE_PRIORITY = 1.5

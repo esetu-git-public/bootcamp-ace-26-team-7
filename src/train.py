@@ -144,9 +144,9 @@ def run_training():
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             early_stop_counter = 0
-            os.makedirs(os.path.dirname(Config.MODEL_SAVE_PATH), exist_ok=True)
-            torch.save(model.state_dict(), Config.MODEL_SAVE_PATH)
-            print(f"Saved new best model checkpoint to {Config.MODEL_SAVE_PATH}")
+            os.makedirs(os.path.dirname(Config.get_model_path()), exist_ok=True)
+            torch.save(model.state_dict(), Config.get_model_path())
+            print(f"Saved new best model checkpoint to {Config.get_model_path()}")
         else:
             early_stop_counter += 1
             if early_stop_counter >= Config.EARLY_STOP_PATIENCE:

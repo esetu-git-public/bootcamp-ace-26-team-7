@@ -26,13 +26,13 @@ def expected_classes():
 @pytest.fixture(autouse=True)
 def reset_prediction_cache():
     import backend.prediction as pred
-    pred._model = None
+    pred._models = None
     pred._transform = None
 
 
 @pytest.fixture
 def mock_model_fallback(monkeypatch):
-    monkeypatch.setattr("backend.prediction.MODEL_PATH", "/nonexistent/model.pth")
+    monkeypatch.setattr("src.config.Config.get_model_path", lambda model_name=None: "/nonexistent/model.pth")
 
     def mock_download(*args, **kwargs):
         raise Exception("Simulated network error")
@@ -45,10 +45,10 @@ def mock_model_fallback(monkeypatch):
         pass
 
     import backend.prediction as pred
-    pred._model = None
+    pred._models = None
     pred._transform = None
 
     yield
 
-    pred._model = None
+    pred._models = None
     pred._transform = None

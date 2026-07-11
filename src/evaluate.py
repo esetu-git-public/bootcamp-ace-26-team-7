@@ -15,11 +15,11 @@ def run_evaluation():
     # Load model
     model = get_model(model_name=Config.MODEL_NAME, num_classes=Config.NUM_CLASSES, pretrained=False)
     
-    if not os.path.exists(Config.MODEL_SAVE_PATH):
-        print(f"Error: Model checkpoint not found at '{Config.MODEL_SAVE_PATH}'. Train the model first.")
+    if not os.path.exists(Config.get_model_path()):
+        print(f"Error: Model checkpoint not found at '{Config.get_model_path()}'. Train the model first.")
         return
         
-    model.load_state_dict(torch.load(Config.MODEL_SAVE_PATH, map_location=Config.DEVICE))
+    model.load_state_dict(torch.load(Config.get_model_path(), map_location=Config.DEVICE))
     model = model.to(Config.DEVICE)
     model.eval()
     
