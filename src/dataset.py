@@ -40,13 +40,16 @@ class SurfaceCrackDataset(Dataset):
 
 def get_transforms():
     """Returns training, validation and test dataset transforms."""
-    # Data augmentation for training
+    # Data augmentation for training (stronger for small dataset)
     train_transform = transforms.Compose([
-        transforms.Resize((Config.IMAGE_SIZE, Config.IMAGE_SIZE)),
+        transforms.RandomResizedCrop(Config.IMAGE_SIZE, scale=(0.75, 1.0)),
         transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(15),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2),
+        transforms.RandomRotation(20),
+        transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.15, hue=0.1),
+        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+        transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0)),
         transforms.ToTensor(),
+        transforms.RandomErasing(p=0.2, scale=(0.02, 0.15)),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     

@@ -24,6 +24,19 @@ class Config:
     EPOCHS_FINE_TUNE = 15
     IMAGE_SIZE = 224
     
+    # Learning rate scheduler
+    SCHEDULER_PATIENCE = 3
+    SCHEDULER_FACTOR = 0.5
+    SCHEDULER_MIN_LR = 1e-7
+    
+    # Early stopping
+    EARLY_STOP_PATIENCE = 7
+    
+    # Mixup / CutMix
+    MIXUP_ALPHA = 0.2
+    CUTMIX_ALPHA = 0.2
+    MIXUP_PROB = 0.5
+    
     # Hardware device configuration
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
