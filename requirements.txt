@@ -26,3 +26,4 @@ numpy==2.5.0
 huggingface_hub==0.31.2
 wandb
 tqdm
+psutil
