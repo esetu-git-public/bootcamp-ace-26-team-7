@@ -54,11 +54,11 @@ def run_evaluation(model_name=None):
         return
         
     acc = accuracy_score(y_true, y_pred)
-    f1 = f1_score(y_true, y_pred, average="weighted")
+    f1 = f1_score(y_true, y_pred, average="weighted", zero_division=0)
     print(f"Test Accuracy: {acc:.4f}")
     print(f"Test Weighted F1: {f1:.4f}")
     
-    report = classification_report(y_true, y_pred, target_names=Config.CLASSES)
+    report = classification_report(y_true, y_pred, target_names=Config.CLASSES, zero_division=0)
     print("\nClassification Report:\n", report)
     
     os.makedirs(Config.REPORTS_DIR, exist_ok=True)
@@ -95,6 +95,9 @@ def run_evaluation(model_name=None):
         })
         wandb.log({"classification_report": wandb.Html(report.replace("\n", "<br>"))})
         wandb.finish()
+
+    # Return metrics for session tracking
+    return {"accuracy": round(acc, 4), "weighted_f1": round(f1, 4)}
 
 if __name__ == "__main__":
     run_evaluation()

@@ -18,6 +18,7 @@ from src.config import Config
 from src.dataset import get_dataloaders
 from src.model import get_model, unfreeze_for_finetune
 from src.utils import plot_training_curves
+from src.session import SessionTracker
 
 def _get_classifier(model, model_name):
     if model_name == "resnet50":
@@ -75,6 +76,10 @@ def train_epoch(model, loader, criterion, optimizer, epoch_desc=""):
         loss = mixup_criterion(criterion, outputs, labels_a, labels_b, lam)
         loss.backward()
         optimizer.step()
+        
+        if torch.isnan(loss):
+            print(f"\nNaN loss detected at batch {total // images.size(0) + 1} — skipping", flush=True)
+            continue
         
         running_loss += loss.item() * images.size(0)
         _, preds = torch.max(outputs, 1)
@@ -231,6 +236,12 @@ def run_training(model_name=None):
     if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
         wandb.log({"training_curves": wandb.Image(curves_path)})
         wandb.finish()
+    
+    return {
+        "best_val_loss": best_val_loss,
+        "train_losses": train_losses,
+        "val_losses": val_losses,
+    }
 
 if __name__ == "__main__":
     run_training()
