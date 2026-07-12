@@ -97,7 +97,17 @@ def run_evaluation(model_name=None):
         wandb.finish()
 
     # Return metrics for session tracking
-    return {"accuracy": round(acc, 4), "weighted_f1": round(f1, 4)}
+    report_dict = classification_report(y_true, y_pred, target_names=Config.CLASSES, zero_division=0, output_dict=True)
+    per_class = {}
+    for cls in Config.CLASSES:
+        if cls in report_dict:
+            per_class[cls] = {
+                "f1": round(report_dict[cls]["f1-score"], 4),
+                "recall": round(report_dict[cls]["recall"], 4),
+                "precision": round(report_dict[cls]["precision"], 4),
+                "support": int(report_dict[cls]["support"]),
+            }
+    return {"accuracy": round(acc, 4), "weighted_f1": round(f1, 4), "per_class": per_class}
 
 if __name__ == "__main__":
     run_evaluation()
