@@ -31,13 +31,12 @@ except ImportError:
 st.set_page_config(page_title="Surface Crack Detection", layout="wide")
 require_login()
  
-CLASSES = ["Potholes", "Cracks", "Patch", "Surface Defects"]
-SEVERITY_ORDER = ["Low", "Medium", "High", "Critical"]
+CLASSES = ["Potholes", "Cracks", "Patch", "Surface_Defects"]
+SEVERITY_ORDER = ["Low", "Medium", "High"]
 SEVERITY_COLOR = {
     "Low": "#2ecc71",
     "Medium": "#f39c12",
     "High": "#e74c3c",
-    "Critical": "#8b0000",
     "---": "#b0b0b0",
 }
 ACCENT = "#6C5CE7"
@@ -337,6 +336,8 @@ def page_dashboard():
                     "class_probabilities": result["class_probabilities"],
                     "severity_label": result["severity_label"],
                     "severity_score": result["severity_score"],
+                    "repair_cost": result.get("repair_cost"),
+                    "repair_time": result.get("repair_time"),
                     "timestamp": datetime.now().strftime("%d %b %Y, %I:%M %p"),
                     "thumbnail": uploaded_file.getvalue(),
                     "filename": uploaded_file.name,
@@ -362,6 +363,11 @@ def page_dashboard():
                 f"**Severity:** <span class='pill' style='background:{SEVERITY_COLOR.get(sev,'#999')}'>{sev}</span>",
                 unsafe_allow_html=True,
             )
+            rc = latest.get("repair_cost")
+            rt = latest.get("repair_time")
+            if rc and rt:
+                st.write(f"**Est. Cost:** {rc['display']}")
+                st.write(f"**Est. Time:** {rt['display']}")
             st.caption(latest.get("timestamp", ""))
         else:
             st.info("No predictions yet.")
@@ -397,6 +403,7 @@ def page_predict():
         st.image(uploaded_file, caption=selected_class, use_container_width=False, width=420)
  
     predicted_class, confidence, class_probs, severity_label, severity_score = "---", 0.0, {}, "---", 0.0
+    repair_cost, repair_time = None, None
  
     if uploaded_file and st.button("Run Prediction", use_container_width=True, type="primary"):
         with st.spinner("Running prediction..."):
@@ -408,12 +415,16 @@ def page_predict():
                     class_probs = result["class_probabilities"]
                     severity_label = result["severity_label"]
                     severity_score = result["severity_score"]
+                    repair_cost = result.get("repair_cost")
+                    repair_time = result.get("repair_time")
                     save_record({
                         "predicted_class": predicted_class,
                         "confidence": confidence,
                         "class_probabilities": class_probs,
                         "severity_label": severity_label,
                         "severity_score": severity_score,
+                        "repair_cost": repair_cost,
+                        "repair_time": repair_time,
                         "timestamp": datetime.now().strftime("%d %b %Y, %I:%M %p"),
                         "thumbnail": uploaded_file.getvalue(),
                         "filename": uploaded_file.name,
@@ -438,6 +449,18 @@ def page_predict():
         st.markdown(f"<h3 style='color:{color};'>Severity: {severity_label}</h3>", unsafe_allow_html=True)
         st.metric("Severity Score", f"{severity_score:.2f} / 1.00")
         st.markdown("</div>", unsafe_allow_html=True)
+
+        # --- Repair cost & time card ---
+        if repair_cost and repair_time:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.subheader("Repair Estimate")
+            cc1, cc2 = st.columns(2)
+            with cc1:
+                st.metric("Estimated Cost", repair_cost["display"])
+            with cc2:
+                st.metric("Estimated Time", repair_time["display"])
+            st.caption("Estimates based on typical US road repair costs (2026). Actual costs vary by region, contractor, and extent of damage.")
+            st.markdown("</div>", unsafe_allow_html=True)
  
         report_text = f"""SURFACE CRACK DETECTION REPORT
 ===============================
@@ -446,6 +469,12 @@ Predicted Class: {predicted_class}
 Confidence: {confidence:.1%}
 Severity Level: {severity_label}
 Severity Score: {severity_score:.2f}
+"""
+        if repair_cost and repair_time:
+            report_text += f"""
+Estimated Repair Cost: {repair_cost['display']}
+Estimated Repair Time: {repair_time['display']}
+Note: Estimates based on typical US road repair costs (2026). Actual costs vary by region, contractor, and extent of damage.
 """
         if class_probs:
             report_text += "\nClass Probabilities:\n"

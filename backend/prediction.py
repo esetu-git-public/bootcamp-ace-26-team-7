@@ -2,14 +2,15 @@ import io
 import os
 import numpy as np
 from PIL import Image
+from backend.cost import estimate_repair_cost, estimate_repair_time
 
-CLASSES = ["Cracks", "Patch", "Potholes", "Surface Defects"]
+CLASSES = ["Cracks", "Patch", "Potholes", "Surface_Defects"]
 
 CLASS_SEVERITY = {
     "Cracks": 0.50,
     "Patch": 0.25,
     "Potholes": 0.75,
-    "Surface Defects": 0.60,
+    "Surface_Defects": 0.60,
 }
 
 _models = None
@@ -120,14 +121,13 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
     base_sev = CLASS_SEVERITY.get(predicted_class, 0.5)
     severity_score = round(min(base_sev * (0.5 + 0.5 * confidence), 1.0), 3)
 
-    if severity_score < 0.25:
+    # 3-tier severity: Low / Medium / High
+    if severity_score < 0.35:
         severity_label = "Low"
-    elif severity_score < 0.55:
+    elif severity_score < 0.65:
         severity_label = "Medium"
-    elif severity_score < 0.80:
-        severity_label = "High"
     else:
-        severity_label = "Critical"
+        severity_label = "High"
 
     result = {
         "success": True,
@@ -139,5 +139,15 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
         "severity_score": severity_score,
         "severity_label": severity_label,
     }
+
+    # Only estimate cost/time if we have a real prediction
+    if predicted_class in CLASS_SEVERITY:
+        cost_estimate = estimate_repair_cost(predicted_class, severity_label, confidence)
+        time_estimate = estimate_repair_time(predicted_class, severity_label, confidence)
+        result["repair_cost"] = cost_estimate
+        result["repair_time"] = time_estimate
+    else:
+        result["repair_cost"] = None
+        result["repair_time"] = None
 
     return result

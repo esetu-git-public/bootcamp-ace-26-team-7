@@ -16,16 +16,15 @@ class Config:
     TEST_DIR = os.path.join(PROCESSED_DATA_DIR, "test")
     
     # Class categories
-    CLASSES = ["Cracks", "Patch", "Potholes", "Surface Defects"]
+    CLASSES = ["Cracks", "Patch", "Potholes", "Surface_Defects"]
     NUM_CLASSES = len(CLASSES)
-    
+
     # Stratified split ratios
     SPLIT_RATIOS = {"train": 0.70, "val": 0.15, "test": 0.15}
-    
+
     # Model selection
     MODEL_NAME = "resnet50"  # Options: "resnet50", "efficientnet_b0", "vit_b_16"
-    ENSEMBLE_MODELS = ["resnet50", "efficientnet_b0"]  # Used when ensemble=True
-    
+    ENSEMBLE_MODELS = []  # empty = single-model mode; only one weights file (best_model.pth) exists on HF
     # Hyperparameters
     BATCH_SIZE = 16
     LEARNING_RATE = 1e-3
@@ -65,8 +64,7 @@ class Config:
 
     @staticmethod
     def get_model_path(model_name=None):
-        name = model_name or Config.MODEL_NAME
-        return os.path.join(Config.MODELS_DIR, f"{name}_best.pth")
+        return os.path.join(Config.MODELS_DIR, "best_model.pth")
     
     # Pothole priority (class index 2) — extra weight multiplier
     POTHOLE_PRIORITY = 1.5
