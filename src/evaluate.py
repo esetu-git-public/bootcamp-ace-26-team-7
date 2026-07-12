@@ -5,8 +5,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
-import wandb
 from src.config import Config
+
+try:
+    import wandb
+    _WANDB_AVAILABLE = True
+except ModuleNotFoundError:
+    wandb = None
+    _WANDB_AVAILABLE = False
 from src.dataset import get_dataloaders
 from src.model import get_model
 
@@ -75,7 +81,7 @@ def run_evaluation(model_name=None):
     print(f"Saved confusion matrix plot to {cm_path}")
     
     # Log to wandb
-    if Config.WANDB_ENABLED:
+    if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
         wandb.init(
             project=Config.WANDB_PROJECT,
             entity=Config.WANDB_ENTITY,

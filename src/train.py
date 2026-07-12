@@ -6,8 +6,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-import wandb
 from tqdm.auto import tqdm
+
+try:
+    import wandb
+    _WANDB_AVAILABLE = True
+except ModuleNotFoundError:
+    wandb = None
+    _WANDB_AVAILABLE = False
 from src.config import Config
 from src.dataset import get_dataloaders
 from src.model import get_model, unfreeze_for_finetune
@@ -106,7 +112,7 @@ def run_training(model_name=None):
     train_accs, val_accs = [], []
     
     # wandb init
-    if Config.WANDB_ENABLED:
+    if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
         run_name = f"{model_name}-{time.strftime('%Y%m%d-%H%M%S')}"
         wandb.init(
             project=Config.WANDB_PROJECT,
@@ -150,7 +156,7 @@ def run_training(model_name=None):
         current_lr = optimizer.param_groups[0]["lr"]
         print(f"Warmup Epoch {epoch+1}/{Config.EPOCHS_WARMUP} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f} | LR: {current_lr:.2e}", flush=True)
         scheduler.step(val_loss)
-        if Config.WANDB_ENABLED:
+        if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
             wandb.log({
                 "phase": "warmup",
                 "epoch": epoch + 1,
@@ -197,7 +203,7 @@ def run_training(model_name=None):
                 print(f"Early stopping triggered after {epoch+1} fine-tune epochs (no improvement for {Config.EARLY_STOP_PATIENCE} epochs).", flush=True)
                 break
         
-        if Config.WANDB_ENABLED:
+        if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
             wandb.log({
                 "phase": "finetune",
                 "epoch": epoch + 1 + Config.EPOCHS_WARMUP,
@@ -213,7 +219,7 @@ def run_training(model_name=None):
     curves_path = os.path.join(Config.REPORTS_DIR, f"training_curves_{model_name}.png")
     plot_training_curves(train_losses, val_losses, train_accs, val_accs, curves_path)
     
-    if Config.WANDB_ENABLED:
+    if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
         wandb.log({"training_curves": wandb.Image(curves_path)})
         wandb.finish()
 
