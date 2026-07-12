@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import time
 import torch
@@ -6,6 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import wandb
+from tqdm.auto import tqdm
 from src.config import Config
 from src.dataset import get_dataloaders
 from src.model import get_model, unfreeze_for_finetune
@@ -40,13 +42,14 @@ def mixup_criterion(criterion, pred, y_a, y_b, lam):
     """Computes the Mixup loss as a weighted combination."""
     return lam * criterion(pred, y_a) + (1 - lam) * criterion(pred, y_b)
 
-def train_epoch(model, loader, criterion, optimizer):
+def train_epoch(model, loader, criterion, optimizer, epoch_desc=""):
     model.train()
     running_loss = 0.0
     correct = 0
     total = 0
     
-    for images, labels in loader:
+    pbar = tqdm(loader, desc=epoch_desc, leave=False, file=sys.stdout)
+    for images, labels in pbar:
         images, labels = images.to(Config.DEVICE), labels.to(Config.DEVICE)
         
         # Apply Mixup
@@ -62,6 +65,8 @@ def train_epoch(model, loader, criterion, optimizer):
         _, preds = torch.max(outputs, 1)
         correct += torch.sum(preds == labels.data).item()
         total += labels.size(0)
+        
+        pbar.set_postfix(loss=f"{loss.item():.4f}")
         
     return running_loss / total, correct / total
 
@@ -93,7 +98,7 @@ def run_training(model_name=None):
     criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=Config.LABEL_SMOOTHING)
     
     # Instantiate Model
-    print(f"Initializing {model_name} Transfer Learning model...")
+    print(f"Initializing {model_name} Transfer Learning model...", flush=True)
     model = get_model(model_name=model_name, num_classes=Config.NUM_CLASSES, pretrained=True, freeze_backbone=True)
     model = model.to(Config.DEVICE)
     
@@ -125,7 +130,8 @@ def run_training(model_name=None):
         wandb.watch(model, log="gradients", log_freq=10)
     
     # Phase 1: Warmup
-    print("--- Phase 1: Warmup Training ---")
+    n_batches = len(train_loader)
+    print(f"--- Phase 1: Warmup Training ({n_batches} batches/epoch) ---", flush=True)
     optimizer = optim.AdamW(model.fc.parameters(), lr=Config.LEARNING_RATE)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode="min", factor=Config.SCHEDULER_FACTOR,
@@ -135,14 +141,14 @@ def run_training(model_name=None):
     early_stop_counter = 0
 
     for epoch in range(Config.EPOCHS_WARMUP):
-        train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer)
+        train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, f"Warmup {epoch+1}/{Config.EPOCHS_WARMUP}")
         val_loss, val_acc = validate(model, val_loader, criterion)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
         train_accs.append(train_acc)
         val_accs.append(val_acc)
         current_lr = optimizer.param_groups[0]["lr"]
-        print(f"Warmup Epoch {epoch+1}/{Config.EPOCHS_WARMUP} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f} | LR: {current_lr:.2e}")
+        print(f"Warmup Epoch {epoch+1}/{Config.EPOCHS_WARMUP} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f} | LR: {current_lr:.2e}", flush=True)
         scheduler.step(val_loss)
         if Config.WANDB_ENABLED:
             wandb.log({
@@ -156,7 +162,7 @@ def run_training(model_name=None):
             })
         
     # Phase 2: Fine-tuning
-    print("--- Phase 2: Fine-Tuning Training ---")
+    print("--- Phase 2: Fine-Tuning Training ---", flush=True)
     unfreeze_for_finetune(model, model_name)
             
     optimizer = optim.AdamW(model.parameters(), lr=Config.FINE_TUNE_LR)
@@ -166,14 +172,14 @@ def run_training(model_name=None):
     )
     
     for epoch in range(Config.EPOCHS_FINE_TUNE):
-        train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer)
+        train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, f"Fine-tune {epoch+1}/{Config.EPOCHS_FINE_TUNE}")
         val_loss, val_acc = validate(model, val_loader, criterion)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
         train_accs.append(train_acc)
         val_accs.append(val_acc)
         current_lr = optimizer.param_groups[0]["lr"]
-        print(f"Fine-Tune Epoch {epoch+1}/{Config.EPOCHS_FINE_TUNE} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f} | LR: {current_lr:.2e}")
+        print(f"Fine-Tune Epoch {epoch+1}/{Config.EPOCHS_FINE_TUNE} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f} | LR: {current_lr:.2e}", flush=True)
         
         scheduler.step(val_loss)
         
@@ -184,11 +190,11 @@ def run_training(model_name=None):
             early_stop_counter = 0
             os.makedirs(os.path.dirname(model_path), exist_ok=True)
             torch.save(model.state_dict(), model_path)
-            print(f"Saved new best model checkpoint to {model_path}")
+            print(f"Saved new best model checkpoint to {model_path}", flush=True)
         else:
             early_stop_counter += 1
             if early_stop_counter >= Config.EARLY_STOP_PATIENCE:
-                print(f"Early stopping triggered after {epoch+1} fine-tune epochs (no improvement for {Config.EARLY_STOP_PATIENCE} epochs).")
+                print(f"Early stopping triggered after {epoch+1} fine-tune epochs (no improvement for {Config.EARLY_STOP_PATIENCE} epochs).", flush=True)
                 break
         
         if Config.WANDB_ENABLED:
