@@ -50,7 +50,7 @@ TIME_RANGES = {
         "High": (6, 16),
         "Critical": (16, 48),
     },
-    "Surface_Defects": {
+    "Surface Defects": {
         "Low": (2, 6),
         "Medium": (6, 16),
         "High": (16, 40),
