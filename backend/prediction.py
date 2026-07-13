@@ -3,6 +3,7 @@ import os
 import numpy as np
 from PIL import Image
 from backend.cost import estimate_repair_cost, estimate_repair_time
+from backend.actions import get_action_plan
 
 CLASSES = ["Cracks", "Patch", "Potholes", "Surface Defects"]
 
@@ -141,13 +142,17 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
     }
 
     # Only estimate cost/time if we have a real prediction
+    # Only estimate cost/time/action if we have a real prediction
     if predicted_class in CLASS_SEVERITY:
         cost_estimate = estimate_repair_cost(predicted_class, severity_label, confidence)
         time_estimate = estimate_repair_time(predicted_class, severity_label, confidence)
+        action_plan = get_action_plan(predicted_class, severity_label)
         result["repair_cost"] = cost_estimate
         result["repair_time"] = time_estimate
+        result["action_plan"] = action_plan
     else:
         result["repair_cost"] = None
         result["repair_time"] = None
+        result["action_plan"] = None
 
     return result
