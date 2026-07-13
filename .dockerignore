@@ -10,3 +10,7 @@ notebooks/
 reports/
 PLAN.md
 TEAM_ROADMAP.md
+
+# Frontend (not needed in backend Docker image)
+frontend/
+docs/

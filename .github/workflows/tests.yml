@@ -61,3 +61,21 @@ jobs:
       - name: Run frontend lint
         run: npm run lint
         continue-on-error: true
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Push to Hugging Face Spaces
+        run: |
+          git remote add hf https://amruthjakku:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/amruthjakku/surface-crack-detection
+          git checkout --orphan clean-deploy
+          git config user.email "ci@deploy.bot"
+          git config user.name "CI Deploy"
+          git add -A
+          git commit -m "Deploy $(date -u +'%Y-%m-%d %H:%M:%S')" --allow-empty
+          git push hf clean-deploy:main --force
