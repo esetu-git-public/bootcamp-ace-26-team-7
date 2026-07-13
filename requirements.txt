@@ -10,9 +10,8 @@ pydantic==2.13.4
 email-validator==2.3.0
 python-dotenv==1.2.2
 bcrypt==4.3.0
+python-jose[cryptography]==3.4.0
 
-# Frontend
-gradio>=5.20.1
 
 # ML / Data
 torch==2.12.1
