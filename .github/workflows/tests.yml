@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           grep -vE '^torch|^--extra-index-url' requirements.txt > req-ci.txt
-          pip install pytest streamlit -r req-ci.txt
+          pip install pytest gradio -r req-ci.txt
 
       - name: Run tests
         run: python -m pytest tests/ --junit-xml=report.xml

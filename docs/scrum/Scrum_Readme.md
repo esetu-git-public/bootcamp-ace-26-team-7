@@ -28,6 +28,14 @@
 | Day 8| sprint execution | Worked on issues and coorperated with team | Conducted stand up and gave product demo| Reviewed the backend API and worked in issues | Worked on issues and coorperated with team| Solved issue #15 and coordinated with team |
 | Day 9| sprint execution | Worked on issues and model training | Conducted stand up and solved issues| Reviewed the backend API and worked in issues | Worked on UI issues and coorperated with team| Solved issues and coorperate with team  |
 | Day 10| sprint execution | Worked on issues and model training | Planed cost to repair estimator and solved issue #23 | Worked on docker an solved issues | Worked and polished UI issues and coorperated with team| Solved issues and understood the codebase| 
+
+# Sprint 3 - Scrum Documentation
+
+
+| Day | Event | Team Lead | Scrum Master | Product Owner | Business Owner | Developer |
+|-----|-------|-----------|---------------|----------------|----------------|-----------|
+| Day 11 | Sprint execution | Traning model, assisted team | Added rule based c2r estimator| Assisted Bo and coordinated with the team | Updated UI into Gradio and solved issues | trained model and coordinated with team |
+
 ## Scrum Master's Responsibilities
 
 - Conducted Sprint Planning.
@@ -55,4 +63,4 @@
 
 ---
 
-**Last Updated:** Day 10
+**Last Updated:** Day 11
