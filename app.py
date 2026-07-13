@@ -653,11 +653,12 @@ Class Probabilities:
         for cls, prob in class_probs.items():
             report += f"  {cls}: {prob:.1%}\n"
 
+        encoded_report = report.replace(' ', '%20').replace('\n', '%0A')
         report_html = f"""<div class="card">
-        <h4>Final Report</h4>
-        <textarea style="width:100%; height:150px; border:1px solid #ddd; border-radius:8px; padding:0.5rem; font-family:monospace; font-size:0.85rem;" readonly>{report}</textarea>
-        <div style="margin-top:0.5rem;"><a href="data:text/plain;charset=utf-8,{report.replace(' ', '%20').replace('\n', '%0A')}" download="final_report.txt" style="display:inline-block; padding:0.4rem 1rem; background:var(--accent); color:white; border-radius:8px; text-decoration:none;">📥 Download Report</a></div>
-        </div>"""
+                <h4>Final Report</h4>
+                <textarea style="width:100%; height:150px; border:1px solid #ddd; border-radius:8px; padding:0.5rem; font-family:monospace; font-size:0.85rem;" readonly>{report}</textarea>
+                <div style="margin-top:0.5rem;"><a href="data:text/plain;charset=utf-8,{encoded_report}" download="final_report.txt" style="display:inline-block; padding:0.4rem 1rem; background:var(--accent); color:white; border-radius:8px; text-decoration:none;">📥 Download Report</a></div>
+                </div>"""
 
         return gr.update(value=results_html), gr.update(value=report_html)
 
