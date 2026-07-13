@@ -14,9 +14,6 @@ ENV/
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# Streamlit config / cache
-.streamlit/
-
 # Environment / local configs
 .env
 .env.local
@@ -25,20 +22,15 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Project-specific patterns
-# Ignore all files in data/ except .gitkeep
+# Project-specific — data & models
 data/*
 !data/.gitkeep
-
-# Ignore model weight checkpoints except .gitkeep
 models/*
 !models/.gitkeep
 
 # Jupyter executed notebooks (outputs)
 notebooks/*_executed.ipynb
-
-# Raw image dataset (large ~223 MB)
-Surface Crack Detection/
+notebooks/eda_outputs/
 
 # Generated reports, figures, logs
 reports/*
@@ -53,13 +45,16 @@ reports/*
 # Other tools
 .astrivya
 
-# Ignore all dataset files, but keep folder structure markers
-data/*
-!data/**/.gitkeep
-/
-
-#ignore all eda outputs, but keep folder structure markers
-notebooks/eda_outputs/
-
-# Large binary files that are rejected by Hugging Face Spaces
+# Large binary files rejected by HuggingFace Spaces
 *.pdf
+
+# Frontend (React / TanStack Start / Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.tanstack/
+frontend/.nitro/
+frontend/.wrangler/
+frontend/.vinxi/
+frontend/.output/
+
+Surface-Crack-Detection/*

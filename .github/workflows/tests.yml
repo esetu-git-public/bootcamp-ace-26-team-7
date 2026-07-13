@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  backend:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,12 +22,12 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           grep -vE '^torch|^--extra-index-url' requirements.txt > req-ci.txt
-          pip install pytest gradio -r req-ci.txt
+          pip install pytest -r req-ci.txt
 
-      - name: Run tests
+      - name: Run backend tests
         run: python -m pytest tests/ --junit-xml=report.xml
 
       - name: Upload test report
@@ -37,20 +37,27 @@ jobs:
           name: test-report
           path: report.xml
 
-  deploy:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [test]
+  frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
-      - name: Push to Hugging Face Spaces
-        run: |
-          git remote add hf https://amruthjakku:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/amruthjakku/surface-crack-detection
-          git checkout --orphan clean-deploy
-          git config user.email "ci@deploy.bot"
-          git config user.name "CI Deploy"
-          git add -A
-          git commit -m "Deploy $(date -u +'%Y-%m-%d %H:%M:%S')" --allow-empty
-          git push hf clean-deploy:main --force
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Run frontend lint
+        run: npm run lint
+        continue-on-error: true
