@@ -11,8 +11,8 @@ reports/
 PLAN.md
 TEAM_ROADMAP.md
 
-# Frontend (not needed in backend Docker image)
-frontend/
+# Frontend dependencies (built inside Docker)
+frontend/node_modules/
 docs/
 
 # Models (downloaded at runtime via HF Hub)

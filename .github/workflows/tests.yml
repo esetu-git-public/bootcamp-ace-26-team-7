@@ -57,14 +57,6 @@ jobs:
 
       - name: Build frontend
         run: npm run build
-        env:
-          VITE_API_BASE_URL: ""
-
-      - name: Upload frontend build
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist/
 
       - name: Run frontend lint
         run: npm run lint
@@ -77,12 +69,6 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download frontend build
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist
-          path: backend/static/
 
       - name: Push to Hugging Face Spaces
         run: |

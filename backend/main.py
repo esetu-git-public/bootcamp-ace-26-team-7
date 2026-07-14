@@ -1,10 +1,8 @@
 import os
-from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from jose import JWTError, jwt
@@ -178,8 +176,3 @@ async def predict_route(
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
-
-# Serve built frontend (if present) — must be last, after all API routes
-STATIC_DIR = Path(__file__).parent / "static"
-if STATIC_DIR.is_dir() and (STATIC_DIR / "index.html").exists():
-    app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="frontend")
