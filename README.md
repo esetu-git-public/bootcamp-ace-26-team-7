@@ -3,9 +3,7 @@ title: Surface Crack Detection
 emoji: 🚀
 colorFrom: red
 colorTo: red
-sdk: gradio
-sdk_version: "5.20.1"
-app_file: app.py
+sdk: docker
 pinned: false
 ---
 
@@ -17,7 +15,6 @@ pinned: false
 
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.12-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org)
-[![Gradio](https://img.shields.io/badge/Gradio-5.20-FF6B6B?logo=gradio&logoColor=white)](https://gradio.app)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.139-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![HuggingFace](https://img.shields.io/badge/🤗%20Spaces-Live-yellow)](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
 [![wandb](https://img.shields.io/badge/wandb-Dashboard-blue?logo=weightsandbiases)](https://wandb.ai/amruthjakku/surface-crack-detection)
@@ -117,7 +114,6 @@ flowchart LR
 
 ```
 bootcamp/
-├── app.py                        # Gradio entry point
 ├── backend/                      # Application logic
 │   ├── auth.py                   #   Hardcoded admin auth
 │   ├── prediction.py             #   Model inference + severity
@@ -149,10 +145,7 @@ bootcamp/
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run Gradio app
-gradio app.py
-
-# 3. (Optional) Prepare dataset & train model
+# 2. Prepare dataset & train model
 python src/prepare_data.py
 python src/train.py
 python src/evaluate.py
@@ -178,15 +171,6 @@ See **Model Performance Comparison** table above for all training runs tracked v
 > Weighted loss with a 1.5× Pothole priority multiplier emphasizes this class during training.
 
 ---
-
-## 🌐 Deployment
-
-| Platform                |    SDK    |     Sleep?      | Setup                                                                          |
-| :---------------------- | :-------: | :-------------: | :----------------------------------------------------------------------------- |
-| **Hugging Face Spaces** | Gradio |   ❌ No sleep   | `git push hf main`                                                             |
-| **Docker (any host)**   |  Docker   | Depends on host | `docker build -t crack-detection . && docker run -p 8501:8501 crack-detection` |
-
-**Live:** [huggingface.co/spaces/amruthjakku/surface-crack-detection](https://huggingface.co/spaces/amruthjakku/surface-crack-detection)
 
 ---
 

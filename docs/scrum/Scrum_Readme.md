@@ -35,6 +35,7 @@
 | Day | Event | Team Lead | Scrum Master | Product Owner | Business Owner | Developer |
 |-----|-------|-----------|---------------|----------------|----------------|-----------|
 | Day 11 | Sprint execution | Traning model, assisted team | Added rule based c2r estimator| Assisted Bo and coordinated with the team | Updated UI into Gradio and solved issues | trained model and coordinated with team |
+| Day 12 | Sprint execution | Traning model,changed Ui  | Conducted standup and solved issues of c2r | Assisted Bo and coordinated with the team | Model trainng and solved issues | Audit report and solved issues|
 
 ## Scrum Master's Responsibilities
 
@@ -63,4 +64,4 @@
 
 ---
 
-**Last Updated:** Day 11
+**Last Updated:** Day 12

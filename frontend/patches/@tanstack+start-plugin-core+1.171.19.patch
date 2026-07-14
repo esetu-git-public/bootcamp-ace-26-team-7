@@ -1,0 +1,13 @@
+diff --git a/node_modules/@tanstack/start-plugin-core/dist/esm/vite/start-router-plugin/plugin.js b/node_modules/@tanstack/start-plugin-core/dist/esm/vite/start-router-plugin/plugin.js
+index 1f00d82..0e20d37 100644
+--- a/node_modules/@tanstack/start-plugin-core/dist/esm/vite/start-router-plugin/plugin.js
++++ b/node_modules/@tanstack/start-plugin-core/dist/esm/vite/start-router-plugin/plugin.js
+@@ -112,7 +112,7 @@ function tanStackStartRouter(startPluginOpts, getConfig, corePluginOpts) {
+ 						"server",
+ 						"headers"
+ 					],
+-					addHmr: true
++					addHmr: false
+ 				},
+ 				plugin: { vite: { environmentName: VITE_ENVIRONMENT_NAMES.client } }
+ 			};

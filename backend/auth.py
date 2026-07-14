@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@surfacedetect.com")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@surfacedetection.com")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@123")
 ADMIN_NAME = os.getenv("ADMIN_NAME", "Admin")
 
