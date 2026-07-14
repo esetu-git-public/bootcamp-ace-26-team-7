@@ -1,37 +1,64 @@
 import os
-import uuid as _uuid
+from typing import Any
 from backend.database import get_supabase
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@surfacedetection.com")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@123")
-ADMIN_NAME = os.getenv("ADMIN_NAME", "Admin")
-
-def register_user(email: str, password: str, full_name: str) -> dict:
+def _user_from_session(session: Any) -> dict:
+    """Build a consistent user dict from a Supabase Auth session / user object."""
+    u = session.user if hasattr(session, "user") else session
     return {
-        "success": True,
-        "message": "Registration successful. You can now log in.",
-        "access_token": None,
-        "user": {"id": str(_uuid.uuid4()), "email": email, "full_name": full_name},
+        "id": u.id,
+        "email": u.email,
+        "full_name": (
+            u.user_metadata.get("full_name")
+            or u.user_metadata.get("user_name")
+            or ""
+        ),
     }
 
 
+def register_user(email: str, password: str, full_name: str) -> dict:
+    supabase = get_supabase()
+    try:
+        result = supabase.auth.sign_up({
+            "email": email,
+            "password": password,
+            "options": {"data": {"full_name": full_name}},
+        })
+        user = result.user
+        return {
+            "success": True,
+            "message": "Registration successful. You can now log in.",
+            "access_token": None,
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "full_name": full_name,
+            },
+        }
+    except Exception as e:
+        msg = str(e)
+        if "already registered" in msg.lower():
+            return {"success": False, "message": "An account with this email already exists."}
+        return {"success": False, "message": f"Registration failed: {msg}"}
+
+
 def login_user(email: str, password: str) -> dict:
-    if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
+    supabase = get_supabase()
+    try:
+        result = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        token = result.session.access_token
         return {
             "success": True,
             "message": "Login successful",
-            "access_token": "hardcoded-admin-token",
-            "user": {
-                "id": str(_uuid.uuid4()),
-                "email": ADMIN_EMAIL,
-                "full_name": ADMIN_NAME,
-            },
+            "access_token": token,
+            "user": _user_from_session(result.user),
         }
-    return {"success": False, "message": "Invalid email or password"}
+    except Exception as e:
+        return {"success": False, "message": "Invalid email or password"}
 
 
 def send_reset_email(email: str) -> dict:
