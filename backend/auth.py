@@ -57,11 +57,19 @@ def login_user(email: str, password: str) -> dict:
             "user": _user_from_session(result.user),
         }
     except Exception as e:
+        msg = str(e)
+        if "email not confirmed" in msg.lower():
+            return {"success": False, "message": "Please confirm your email before logging in."}
         return {"success": False, "message": "Invalid email or password"}
 
 
 def send_reset_email(email: str) -> dict:
-    return {"success": True, "message": "Password reset link sent to your email."}
+    supabase = get_supabase()
+    try:
+        supabase.auth.reset_password_email(email)
+        return {"success": True, "message": "Password reset link sent to your email."}
+    except Exception as e:
+        return {"success": False, "message": f"Failed to send reset email: {e}"}
 
 
 
