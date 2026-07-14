@@ -1,14 +1,51 @@
 import { createServer } from 'node:http';
 import { request as httpRequest } from 'node:http';
+import { readFileSync, existsSync } from 'node:fs';
+import { extname, join } from 'node:path';
 
 const BACKEND_PORT = 5000;
 const PORT = parseInt(process.env.PORT || '7860', 10);
+
+const STATIC_DIR = join(import.meta.dirname, 'dist', 'client');
+
+const MIME_TYPES = {
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.html': 'text/html',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.map': 'application/json',
+};
+
+function serveStatic(urlPath, res) {
+  const filePath = join(STATIC_DIR, urlPath);
+  if (!existsSync(filePath)) return false;
+  const ext = extname(filePath);
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  try {
+    const content = readFileSync(filePath);
+    res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=31536000, immutable' });
+    res.end(content);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 async function main() {
   const { default: serverHandler, renderErrorPage } = await import('./dist/server/server.js');
 
   const server = createServer(async (req, res) => {
-    if (req.url.startsWith('/api/')) {
+    const urlPath = new URL(req.url, `http://127.0.0.1:${PORT}`).pathname;
+
+    if (urlPath.startsWith('/api/')) {
       const proxyReq = httpRequest(
         {
           hostname: '127.0.0.1',
@@ -30,6 +67,9 @@ async function main() {
       });
       return;
     }
+
+    // Serve static assets directly from dist/client/
+    if (serveStatic(urlPath, res)) return;
 
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
