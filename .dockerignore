@@ -14,3 +14,7 @@ TEAM_ROADMAP.md
 # Frontend (not needed in backend Docker image)
 frontend/
 docs/
+
+# Models (downloaded at runtime via HF Hub)
+models/
+data/
