@@ -37,7 +37,7 @@ def register_user(username: str, password: str, full_name: str) -> dict:
 
 
 def login_user(username: str, password: str) -> dict:
-    supabase = get_supabase()
+    supabase = get_service_client()
     try:
         result = supabase.table("users").select("*").eq("username", username).execute()
         if not result.data:

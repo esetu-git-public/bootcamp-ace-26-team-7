@@ -67,9 +67,9 @@ class TestRegister:
 
 class TestLogin:
     def test_login_success(self, mock_db):
-        supabase, _ = mock_db
+        _, service = mock_db
         pwhash = bcrypt.hashpw(b"Pass@123", bcrypt.gensalt()).decode()
-        supabase.table("users").select("*").eq("username", "testuser").execute.return_value = MagicMock(
+        service.table("users").select("*").eq("username", "testuser").execute.return_value = MagicMock(
             data=[_fake_user(pwhash=pwhash)],
         )
         result = login_user(username="testuser", password="Pass@123")
@@ -78,9 +78,9 @@ class TestLogin:
         assert result["user"]["full_name"] == "Test User"
 
     def test_login_failure_wrong_password(self, mock_db):
-        supabase, _ = mock_db
+        _, service = mock_db
         pwhash = bcrypt.hashpw(b"RealPass1", bcrypt.gensalt()).decode()
-        supabase.table("users").select("*").eq("username", "testuser").execute.return_value = MagicMock(
+        service.table("users").select("*").eq("username", "testuser").execute.return_value = MagicMock(
             data=[_fake_user(pwhash=pwhash)],
         )
         result = login_user(username="testuser", password="WrongPass")
@@ -88,15 +88,15 @@ class TestLogin:
         assert "Invalid" in result["message"]
 
     def test_login_failure_unknown_user(self, mock_db):
-        supabase, _ = mock_db
-        supabase.table("users").select("*").eq("username", "nobody").execute.return_value = MagicMock(data=[])
+        _, service = mock_db
+        service.table("users").select("*").eq("username", "nobody").execute.return_value = MagicMock(data=[])
         result = login_user(username="nobody", password="x")
         assert result["success"] is False
         assert "Invalid" in result["message"]
 
     def test_login_failure_github_user_no_password(self, mock_db):
-        supabase, _ = mock_db
-        supabase.table("users").select("*").eq("username", "ghuser").execute.return_value = MagicMock(
+        _, service = mock_db
+        service.table("users").select("*").eq("username", "ghuser").execute.return_value = MagicMock(
             data=[_fake_user(username="ghuser", pwhash=None)],
         )
         result = login_user(username="ghuser", password="anything")
