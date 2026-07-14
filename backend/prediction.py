@@ -16,19 +16,90 @@ CLASS_SEVERITY = {
     "Surface Defects": 0.60,
 }
 
-_models = None
-_transform = None
-MODEL_STATUS = "unavailable"  # "loading", "loaded", "unavailable", "error"
+
+def get_active_model_name():
+    return _active_model
 
 
-def _load_models():
-    global _models, _transform, MODEL_STATUS
-    if _models is not None:
-        logger.info("_load_models: models already loaded, returning cached")
-        return _models, _transform
+def get_active_model_status():
+    return ACTIVE_MODEL_STATUS
 
-    MODEL_STATUS = "loading"
-    logger.info("_load_models: starting model loading")
+
+MODEL_REGISTRY = {
+    "resnet50": {
+        "display_name": "ResNet50",
+        "hf_file": "best_model.pth",
+        "hf_repo": "amruthjakku/surface-crack-detection-model",
+        "size_mb": 96,
+    },
+    "efficientnet_b0": {
+        "display_name": "EfficientNet-B0",
+        "hf_file": "efficientnet_b0_best.pth",
+        "hf_repo": "amruthjakku/surface-crack-detection-model",
+        "size_mb": 18,
+    },
+    "vit_b_16": {
+        "display_name": "ViT-B/16",
+        "hf_file": "vit_b_16_best.pth",
+        "hf_repo": "amruthjakku/surface-crack-detection-model",
+        "size_mb": 344,
+    },
+}
+
+_loaded = {}
+_model_transforms = {}
+_active_model = "resnet50"
+ACTIVE_MODEL_STATUS = "unavailable"
+_model_statuses = {}
+
+
+def get_available_models():
+    result = []
+    for key, info in MODEL_REGISTRY.items():
+        result.append({
+            "name": key,
+            "display_name": info["display_name"],
+            "size_mb": info["size_mb"],
+            "is_loaded": key in _loaded,
+            "is_active": key == _active_model,
+            "status": _model_statuses.get(key, "unavailable"),
+        })
+    return result
+
+
+def select_model(model_name):
+    global _active_model, ACTIVE_MODEL_STATUS
+    if model_name not in MODEL_REGISTRY:
+        return {"success": False, "message": f"Unknown model: {model_name}"}
+    _active_model = model_name
+    if model_name in _loaded:
+        ACTIVE_MODEL_STATUS = "loaded"
+        return {"success": True, "active_model": model_name, "status": "loaded"}
+    ACTIVE_MODEL_STATUS = "loading"
+    _model_statuses[model_name] = "loading"
+    try:
+        load_model(model_name)
+        ACTIVE_MODEL_STATUS = "loaded"
+    except Exception as e:
+        logger.warning("select_model: load FAILED for '%s': %s", model_name, e, exc_info=True)
+        ACTIVE_MODEL_STATUS = "unavailable"
+        _model_statuses[model_name] = "unavailable"
+        return {"success": False, "active_model": model_name, "status": "unavailable", "message": str(e)}
+    return {"success": True, "active_model": model_name, "status": "loaded"}
+
+
+def load_model(model_name):
+    global _model_statuses
+    if model_name in _loaded:
+        return _loaded[model_name], _model_transforms[model_name]
+
+    _model_statuses[model_name] = "loading"
+    info = MODEL_REGISTRY.get(model_name)
+    if info is None:
+        _model_statuses[model_name] = "unavailable"
+        raise ValueError(f"Unknown model: {model_name}")
+
+    logger.info("load_model: starting '%s' (display=%s, size=%dMB)", model_name, info["display_name"], info["size_mb"])
 
     try:
         from torchvision import transforms
@@ -38,86 +109,76 @@ def _load_models():
         logger.info("Imports OK: torch=%s, device=%s", torch.__version__, Config.DEVICE)
     except ImportError as e:
         logger.warning("Import FAILED: %s", e, exc_info=True)
-        MODEL_STATUS = "unavailable"
-        return None, None
+        _model_statuses[model_name] = "unavailable"
+        raise
 
-    _transform = transforms.Compose([
+    transform = transforms.Compose([
         transforms.Resize((Config.IMAGE_SIZE, Config.IMAGE_SIZE)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    logger.info("Transform ready: size=%s", Config.IMAGE_SIZE)
 
-    _models = []
-    model_names = Config.ENSEMBLE_MODELS if len(Config.ENSEMBLE_MODELS) > 0 else [Config.MODEL_NAME]
-    logger.info("Model names to load: %s", model_names)
+    model_path = Config.get_model_path(model_name=model_name)
+    logger.info("Model path: '%s', exists=%s", model_path, os.path.exists(model_path))
 
-    for name in model_names:
-        model_path = Config.get_model_path(model_name=name)
-        logger.info("Processing model='%s': path='%s', exists=%s", name, model_path, os.path.exists(model_path))
+    if not os.path.exists(model_path):
+        logger.info("Path not found. models/ dir: %s", os.listdir("models") if os.path.isdir("models") else "DIR NOT FOUND")
+        try:
+            from huggingface_hub import hf_hub_download
+            os.makedirs("models", exist_ok=True)
+            logger.info("Downloading '%s' from HF Hub (file=%s)", model_name, info["hf_file"])
+            downloaded = hf_hub_download(
+                repo_id=info["hf_repo"],
+                filename=info["hf_file"],
+                local_dir="models"
+            )
+            file_size = os.path.getsize(downloaded) if os.path.exists(downloaded) else -1
+            logger.info("Download SUCCESS: path='%s', size=%d bytes", downloaded, file_size)
+            model_path = downloaded
+        except Exception as e:
+            logger.warning("Download FAILED for '%s': %s", model_name, e, exc_info=True)
+            _model_statuses[model_name] = "unavailable"
+            raise
 
-        if not os.path.exists(model_path):
-            logger.info("Path not found. models/ dir contents: %s", os.listdir("models") if os.path.isdir("models") else "DIR NOT FOUND")
-            try:
-                from huggingface_hub import hf_hub_download
-                os.makedirs("models", exist_ok=True)
-                logger.info("Starting hf_hub_download(repo_id='amruthjakku/surface-crack-detection-model', filename='%s_best.pth', local_dir='models')", name)
-                downloaded = hf_hub_download(
-                    repo_id="amruthjakku/surface-crack-detection-model",
-                    filename=f"{name}_best.pth",
-                    local_dir="models"
-                )
-                file_size = os.path.getsize(downloaded) if os.path.exists(downloaded) else -1
-                logger.info("Download SUCCESS: path='%s', size=%d bytes", downloaded, file_size)
-                model_path = downloaded
-            except Exception as e:
-                logger.warning("Download FAILED: %s", e, exc_info=True)
-                import pathlib
-                cache_dir = pathlib.Path.home() / ".cache" / "huggingface" / "hub"
-                if cache_dir.is_dir():
-                    logger.warning("HF cache dir exists at %s, contents: %s", cache_dir, os.listdir(str(cache_dir)))
-                else:
-                    logger.warning("HF cache dir %s does not exist", cache_dir)
+    try:
+        logger.info("Loading model '%s' from '%s'", model_name, model_path)
+        m = get_model(model_name=model_name, num_classes=Config.NUM_CLASSES, pretrained=False)
+        data = torch.load(model_path, map_location=Config.DEVICE)
+        if isinstance(data, dict):
+            logger.info("Checkpoint keys: %s", list(data.keys()))
+            if "model_state_dict" in data or "state_dict" in data:
+                data = data.get("model_state_dict") or data["state_dict"]
+                logger.info("Extracted state_dict from checkpoint wrapper")
+        m.load_state_dict(data)
+        m.to(Config.DEVICE)
+        m.eval()
+        num_params = sum(p.numel() for p in m.parameters())
+        logger.info("Model '%s' loaded OK: %d parameters, device=%s", model_name, num_params, Config.DEVICE)
+        _loaded[model_name] = m
+        _model_transforms[model_name] = transform
+        _model_statuses[model_name] = "loaded"
+        return m, transform
+    except Exception as e:
+        logger.warning("Model load FAILED for '%s': %s", model_name, e, exc_info=True)
+        _model_statuses[model_name] = "unavailable"
+        raise
 
-        if os.path.exists(model_path):
-            try:
-                logger.info("Loading model from '%s'", model_path)
-                m = get_model(model_name=name, num_classes=Config.NUM_CLASSES, pretrained=False)
-                data = torch.load(model_path, map_location=Config.DEVICE)
-                if isinstance(data, dict):
-                    logger.info("Checkpoint keys: %s", list(data.keys()))
-                    if "model_state_dict" in data or "state_dict" in data:
-                        data = data.get("model_state_dict") or data["state_dict"]
-                        logger.info("Extracted state_dict from checkpoint wrapper")
-                else:
-                    logger.info("Checkpoint is a bare tensor/list, not a dict")
-                m.load_state_dict(data)
-                m.to(Config.DEVICE)
-                m.eval()
-                num_params = sum(p.numel() for p in m.parameters())
-                logger.info("Model '%s' loaded OK: %d parameters, device=%s", name, num_params, Config.DEVICE)
-                _models.append(m)
-            except Exception as e:
-                logger.warning("Model load FAILED for '%s': %s", name, e, exc_info=True)
 
-    if len(_models) > 0:
-        MODEL_STATUS = "loaded"
-        logger.info("_load_models: done. Loaded %d model(s), status=%s", len(_models), MODEL_STATUS)
-    else:
-        MODEL_STATUS = "unavailable"
-        _models = None
-        logger.warning("_load_models: done. No models loaded, status=unavailable")
-    return _models, _transform
+def get_active_model():
+    if _active_model not in _loaded:
+        try:
+            load_model(_active_model)
+        except Exception:
+            return None, None
+    return _loaded[_active_model], _model_transforms[_active_model]
 
 
 def _tta_predict(models, input_tensor):
-    """Run inference with Test-Time Augmentation and return averaged probabilities."""
     from src.config import Config
     import torch
     from torchvision import transforms as T
 
     all_probs = []
-    # Base prediction
     with torch.no_grad():
         for m in models:
             outputs = m(input_tensor)
@@ -127,7 +188,6 @@ def _tta_predict(models, input_tensor):
     if not Config.TTA_ENABLED:
         return np.mean(all_probs, axis=0)
 
-    # Test-time augmentations
     tta_transforms = [
         lambda x: x,
         lambda x: T.functional.hflip(x),
@@ -148,15 +208,15 @@ def _tta_predict(models, input_tensor):
 
 
 def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
-    models, transform = _load_models()
+    model, transform = get_active_model()
 
-    if models is not None:
+    if model is not None:
         try:
             pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
             import torch
             input_tensor = transform(pil_image).unsqueeze(0).to("cpu")
 
-            avg_probs = _tta_predict(models, input_tensor)
+            avg_probs = _tta_predict([model], input_tensor)
             pred_idx = int(np.argmax(avg_probs))
             confidence = float(avg_probs[pred_idx])
             predicted_class = CLASSES[pred_idx]
@@ -172,7 +232,6 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
     base_sev = CLASS_SEVERITY.get(predicted_class, 0.5)
     severity_score = round(min(base_sev * (0.5 + 0.5 * confidence), 1.0), 3)
 
-    # 3-tier severity: Low / Medium / High
     if severity_score < 0.35:
         severity_label = "Low"
     elif severity_score < 0.65:
@@ -191,7 +250,6 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
         "severity_label": severity_label,
     }
 
-    # Only estimate cost/time if we have a real prediction
     if predicted_class in CLASS_SEVERITY:
         cost_estimate = estimate_repair_cost(predicted_class, severity_label, confidence)
         time_estimate = estimate_repair_time(predicted_class, severity_label, confidence)

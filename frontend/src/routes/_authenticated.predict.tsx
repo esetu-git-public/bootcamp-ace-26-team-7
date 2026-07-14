@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { api, ApiError, type PredictionResult, type DefectClass } from "@/lib/api";
 import { addHistory, useAuth } from "@/lib/auth";
+import { ModelSelector } from "@/components/ModelSelector";
 
 export const Route = createFileRoute("/_authenticated/predict")({
   head: () => ({
@@ -69,6 +70,11 @@ function PredictPage() {
         <p className="text-muted-foreground mt-1">
           Upload a photo of pavement or road surface to classify the defect and estimate repair cost.
         </p>
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-2">
+        <span className="text-xs text-muted-foreground">Model</span>
+        <ModelSelector />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

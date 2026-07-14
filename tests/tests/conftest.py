@@ -26,8 +26,11 @@ def expected_classes():
 @pytest.fixture(autouse=True)
 def reset_prediction_cache():
     import backend.prediction as pred
-    pred._models = None
-    pred._transform = None
+    pred._loaded = {}
+    pred._model_transforms = {}
+    pred._model_statuses = {}
+    pred._active_model = "resnet50"
+    pred.ACTIVE_MODEL_STATUS = "unavailable"
 
 
 @pytest.fixture
@@ -45,10 +48,16 @@ def mock_model_fallback(monkeypatch):
         pass
 
     import backend.prediction as pred
-    pred._models = None
-    pred._transform = None
+    pred._loaded = {}
+    pred._model_transforms = {}
+    pred._model_statuses = {}
+    pred._active_model = "resnet50"
+    pred.ACTIVE_MODEL_STATUS = "unavailable"
 
     yield
 
-    pred._models = None
-    pred._transform = None
+    pred._loaded = {}
+    pred._model_transforms = {}
+    pred._model_statuses = {}
+    pred._active_model = "resnet50"
+    pred.ACTIVE_MODEL_STATUS = "unavailable"

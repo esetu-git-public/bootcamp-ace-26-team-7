@@ -15,6 +15,13 @@ export interface AuthSuccess {
   user: AuthUser;
 }
 
+export interface AuthError {
+  success: false;
+  message: string;
+}
+
+export type AuthResult = AuthSuccess | AuthError;
+
 export interface RegisterSuccess {
   success: true;
   message: string;
@@ -106,11 +113,42 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   return json as T;
 }
 
+export interface ModelInfo {
+  name: string;
+  display_name: string;
+  size_mb: number;
+  is_loaded: boolean;
+  is_active: boolean;
+  status: string;
+}
+
+export interface ModelStatus {
+  status: string;
+  active_model: string;
+}
+
+export interface ModelsResponse {
+  models: ModelInfo[];
+}
+
+export interface SelectModelResponse {
+  success: boolean;
+  active_model?: string;
+  status?: string;
+  message?: string;
+}
+
 export const api = {
   modelStatus: () =>
-    apiFetch<{ status: string }>("/api/model/status"),
+    apiFetch<ModelStatus>("/api/model/status"),
+  getModels: () =>
+    apiFetch<ModelsResponse>("/api/models"),
+  selectModel: (model_name: string) =>
+    apiFetch<SelectModelResponse>("/api/model/select", {
+      body: { model_name },
+    }),
   login: (username: string, password: string) =>
-    apiFetch<AuthSuccess>("/api/auth/login", { body: { username, password } }),
+    apiFetch<AuthResult>("/api/auth/login", { body: { username, password } }),
 
   register: (username: string, password: string, full_name: string) =>
     apiFetch<RegisterSuccess>("/api/auth/register", {

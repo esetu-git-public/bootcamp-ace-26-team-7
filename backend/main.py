@@ -14,7 +14,13 @@ from backend.auth import (
     get_github_login_url,
     complete_github_login,
 )
-from backend.prediction import predict_image, MODEL_STATUS
+from backend.prediction import (
+    predict_image,
+    get_available_models,
+    select_model,
+    get_active_model_name,
+    get_active_model_status,
+)
 
 load_dotenv()
 
@@ -166,18 +172,32 @@ async def predict_route(
 
 @app.get("/api/model/status")
 def model_status():
-    return {"status": MODEL_STATUS}
+    return {
+        "status": get_active_model_status(),
+        "active_model": get_active_model_name(),
+    }
+
+
+@app.get("/api/models")
+def list_models():
+    return {"models": get_available_models()}
+
+
+@app.post("/api/model/select")
+def select_model_route(req: dict):
+    model_name = req.get("model_name")
+    if not model_name:
+        return {"success": False, "message": "model_name required"}
+    return select_model(model_name)
 
 
 @app.get("/api/model/debug")
 def model_debug():
-    from backend.prediction import _models, _transform, MODEL_STATUS
     import pathlib
     info = {
-        "model_status": MODEL_STATUS,
-        "models_loaded": _models is not None and len(_models) > 0,
-        "num_models": len(_models) if _models else 0,
-        "transform_ready": _transform is not None,
+        "model_status": get_active_model_status(),
+        "active_model": get_active_model_name(),
+        "available_models": get_available_models(),
         "models_dir_exists": os.path.isdir("models"),
         "models_dir_files": os.listdir("models") if os.path.isdir("models") else [],
     }

@@ -30,10 +30,11 @@ export function TopNav() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [modelStatus, setModelStatus] = useState<string>("unavailable");
+  const [activeModel, setActiveModel] = useState<string>("");
 
   useEffect(() => {
     api.modelStatus()
-      .then(r => setModelStatus(r.status))
+      .then(r => { setModelStatus(r.status); setActiveModel(r.active_model); })
       .catch(() => setModelStatus("unavailable"));
   }, []);
 
@@ -54,6 +55,7 @@ export function TopNav() {
             <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
               <span className={`h-1.5 w-1.5 rounded-full ${STATUS_COLORS[modelStatus] ?? "bg-gray-500"}`} />
               {modelStatus}
+              {activeModel && <span className="ml-1 font-medium">{activeModel}</span>}
             </span>
           </div>
         </Link>
