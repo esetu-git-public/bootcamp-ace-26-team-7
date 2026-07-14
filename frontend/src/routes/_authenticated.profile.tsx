@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, Mail, Shield } from "lucide-react";
+import { LogOut, User, Shield } from "lucide-react";
 
 import { useAuth, getHistory, type HistoryEntry } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
@@ -50,7 +50,7 @@ function ProfilePage() {
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-semibold">{user?.full_name}</h1>
             <p className="text-muted-foreground inline-flex items-center gap-2 mt-1">
-              <Mail className="h-4 w-4" /> {user?.email}
+              <User className="h-4 w-4" /> {user?.username}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs">

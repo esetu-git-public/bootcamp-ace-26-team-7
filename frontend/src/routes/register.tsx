@@ -25,7 +25,7 @@ export const Route = createFileRoute("/register")({
 const schema = z
   .object({
     full_name: z.string().trim().min(2, "Enter your name").max(80),
-    email: z.string().trim().email("Enter a valid email"),
+    username: z.string().trim().min(3, "At least 3 characters").max(30),
     password: z.string().min(8, "At least 8 characters").max(128),
     confirm: z.string(),
   })
@@ -36,7 +36,7 @@ const schema = z
 
 function RegisterPage() {
   const navigate = useNavigate();
-  const [values, setValues] = useState({ full_name: "", email: "", password: "", confirm: "" });
+  const [values, setValues] = useState({ full_name: "", username: "", password: "", confirm: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -55,7 +55,7 @@ function RegisterPage() {
     setErrors({});
     setSubmitting(true);
     try {
-      await api.register(parsed.data.email, parsed.data.password, parsed.data.full_name);
+      await api.register(parsed.data.username, parsed.data.password, parsed.data.full_name);
       toast.success("Account created. Please sign in.");
       navigate({ to: "/login", replace: true });
     } catch (err) {
@@ -83,9 +83,9 @@ function RegisterPage() {
           {errors.full_name && <p className="text-xs text-destructive">{errors.full_name}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" autoComplete="email" value={values.email} onChange={set("email")} placeholder="you@example.com" />
-          {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+          <Label htmlFor="username">Username</Label>
+          <Input id="username" type="text" autoComplete="username" value={values.username} onChange={set("username")} placeholder="jane_doe" />
+          {errors.username && <p className="text-xs text-destructive">{errors.username}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>

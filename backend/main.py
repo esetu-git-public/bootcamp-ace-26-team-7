@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 from backend.auth import (
     login_user,
     register_user,
-    send_reset_email,
     get_github_login_url,
     complete_github_login,
 )
@@ -66,10 +65,10 @@ JWT_EXPIRATION_HOURS = 24
 security = HTTPBearer(auto_error=False)
 
 
-def create_jwt_token(user_id: str, email: str) -> str:
+def create_jwt_token(user_id: str, username: str) -> str:
     payload = {
         "sub": user_id,
-        "email": email,
+        "username": username,
         "iat": datetime.now(timezone.utc),
         "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS),
     }
@@ -89,25 +88,22 @@ def verify_token(credentials: HTTPAuthorizationCredentials | None = Depends(secu
 # --- Request / Response models ---
 
 class LoginRequest(BaseModel):
-    email: str
+    username: str
     password: str
 
 class RegisterRequest(BaseModel):
-    email: str
+    username: str
     password: str
     full_name: str
-
-class ForgotRequest(BaseModel):
-    email: str
 
 
 # --- Auth routes (always return 200; body.success tells the real outcome) ---
 
 @app.post("/api/auth/login")
 def login_route(req: LoginRequest):
-    result = login_user(req.email, req.password)
+    result = login_user(req.username, req.password)
     if result["success"]:
-        token = create_jwt_token(result["user"]["id"], result["user"]["email"])
+        token = create_jwt_token(result["user"]["id"], result["user"]["username"])
         return {
             "success": True,
             "access_token": token,
@@ -121,12 +117,7 @@ def login_route(req: LoginRequest):
 
 @app.post("/api/auth/register")
 def register_route(req: RegisterRequest):
-    return register_user(req.email, req.password, req.full_name)
-
-
-@app.post("/api/auth/forgot-password")
-def forgot_route(req: ForgotRequest):
-    return send_reset_email(req.email)
+    return register_user(req.username, req.password, req.full_name)
 
 
 @app.get("/api/auth/github")
@@ -142,7 +133,7 @@ def github_start(redirect_to: str = Query(...)):
 def github_callback(code: str = Query(...)):
     try:
         result = complete_github_login(code)
-        token = create_jwt_token(result["user"]["id"], result["user"]["email"])
+        token = create_jwt_token(result["user"]["id"], result["user"]["username"])
         return {
             "success": True,
             "access_token": token,

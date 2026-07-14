@@ -8,9 +8,8 @@ import { AuthCard } from "@/components/AuthCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { api, ApiError } from "@/lib/api";
-import { getRememberedEmail, setRememberedEmail, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -25,27 +24,18 @@ export const Route = createFileRoute("/login")({
 });
 
 const schema = z.object({
-  email: z.string().trim().email("Enter a valid email"),
+  username: z.string().trim().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
 function LoginPage() {
   const { signIn, isAuthenticated, isReady } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
   const [submitting, setSubmitting] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
-
-  useEffect(() => {
-    const saved = getRememberedEmail();
-    if (saved) {
-      setEmail(saved);
-      setRemember(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (isReady && isAuthenticated) navigate({ to: "/dashboard", replace: true });
@@ -53,11 +43,11 @@ function LoginPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = schema.safeParse({ email, password });
+    const parsed = schema.safeParse({ username, password });
     if (!parsed.success) {
       const errs: typeof errors = {};
       for (const issue of parsed.error.issues) {
-        errs[issue.path[0] as "email" | "password"] = issue.message;
+        errs[issue.path[0] as "username" | "password"] = issue.message;
       }
       setErrors(errs);
       return;
@@ -65,8 +55,7 @@ function LoginPage() {
     setErrors({});
     setSubmitting(true);
     try {
-      const res = await api.login(parsed.data.email, parsed.data.password);
-      setRememberedEmail(remember ? parsed.data.email : "");
+      const res = await api.login(parsed.data.username, parsed.data.password);
       signIn(res.access_token, res.user);
       toast.success(`Welcome back, ${res.user.full_name}`);
       navigate({ to: "/dashboard", replace: true });
@@ -97,24 +86,22 @@ function LoginPage() {
       subtitle="Sign in to your CrackScan account"
       footer={
         <span>
-          <Link to="/forgot" className="text-primary hover:underline">Forgot password?</Link>
-          <span className="mx-2">·</span>
           <Link to="/register" className="text-primary hover:underline">Create account</Link>
         </span>
       }
     >
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="username">Username</Label>
           <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            id="username"
+            type="text"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="your_username"
           />
-          {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+          {errors.username && <p className="text-xs text-destructive">{errors.username}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
@@ -128,10 +115,6 @@ function LoginPage() {
           />
           {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
         </div>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground select-none cursor-pointer">
-          <Checkbox checked={remember} onCheckedChange={(v) => setRemember(!!v)} />
-          Remember me
-        </label>
         <Button
           type="submit"
           disabled={submitting}

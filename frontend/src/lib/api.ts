@@ -5,7 +5,7 @@ export const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/,
 
 export interface AuthUser {
   id: string;
-  email: string;
+  username: string;
   full_name: string;
 }
 
@@ -107,16 +107,13 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
 }
 
 export const api = {
-  login: (email: string, password: string) =>
-    apiFetch<AuthSuccess>("/api/auth/login", { body: { email, password } }),
+  login: (username: string, password: string) =>
+    apiFetch<AuthSuccess>("/api/auth/login", { body: { username, password } }),
 
-  register: (email: string, password: string, full_name: string) =>
+  register: (username: string, password: string, full_name: string) =>
     apiFetch<RegisterSuccess>("/api/auth/register", {
-      body: { email, password, full_name },
+      body: { username, password, full_name },
     }),
-
-  forgotPassword: (email: string) =>
-    apiFetch<MessageSuccess>("/api/auth/forgot-password", { body: { email } }),
 
   githubStart: (redirectTo: string) =>
     apiFetch<{ url: string }>(

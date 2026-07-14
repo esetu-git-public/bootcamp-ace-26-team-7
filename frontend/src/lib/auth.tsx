@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import type { AuthUser } from "./api";
 
 const STORAGE_KEY = "scd_auth";
-const REMEMBER_EMAIL_KEY = "scd_remember_email";
 
 export interface AuthState {
   user: AuthUser | null;
@@ -73,17 +72,6 @@ export function useAuth(): AuthState {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
   return ctx;
-}
-
-export function getRememberedEmail(): string {
-  if (typeof window === "undefined") return "";
-  return window.localStorage.getItem(REMEMBER_EMAIL_KEY) ?? "";
-}
-
-export function setRememberedEmail(email: string) {
-  if (typeof window === "undefined") return;
-  if (email) window.localStorage.setItem(REMEMBER_EMAIL_KEY, email);
-  else window.localStorage.removeItem(REMEMBER_EMAIL_KEY);
 }
 
 // Local prediction history (per-user, in localStorage) — used until the

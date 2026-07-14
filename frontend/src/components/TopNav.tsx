@@ -58,7 +58,7 @@ export function TopNav() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col">
                 <span className="text-sm font-medium truncate">{user?.full_name}</span>
-                <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
+                <span className="text-xs text-muted-foreground truncate">{user?.username}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
