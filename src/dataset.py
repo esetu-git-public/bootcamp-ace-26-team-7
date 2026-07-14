@@ -5,6 +5,13 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from src.config import Config
 
+try:
+    import wandb
+    _WANDB_AVAILABLE = True
+except ModuleNotFoundError:
+    wandb = None
+    _WANDB_AVAILABLE = False
+
 class SurfaceCrackDataset(Dataset):
     """Custom PyTorch dataset for road surface crack/defect classification."""
     def __init__(self, data_dir, transform=None, include_synthetic=False):
@@ -69,12 +76,16 @@ def get_transforms():
     
     return train_transform, val_test_transform
 
+_logged_dataset_stats = False
+
+
 def get_dataloaders(fold=None):
     """Helper to return train, val, and test DataLoader instances.
     
     Args:
         fold: If provided, loads from k-fold split directories.
     """
+    global _logged_dataset_stats
     train_transform, val_test_transform = get_transforms()
     
     if fold is not None:
@@ -87,6 +98,20 @@ def get_dataloaders(fold=None):
     train_dataset = SurfaceCrackDataset(train_dir, transform=train_transform, include_synthetic=Config.SYNTHETIC_ENABLED)
     val_dataset = SurfaceCrackDataset(val_dir, transform=val_test_transform)
     test_dataset = SurfaceCrackDataset(Config.TEST_DIR, transform=val_test_transform)
+    
+    # Log class distribution to wandb once
+    if _WANDB_AVAILABLE and Config.WANDB_ENABLED and not _logged_dataset_stats:
+        _logged_dataset_stats = True
+        try:
+            train_counts = {cls: 0 for cls in Config.CLASSES}
+            for _, label in train_dataset:
+                train_counts[Config.CLASSES[label.item()]] += 1
+            wandb.log({"dataset/train_class_distribution": wandb.Table(
+                columns=["class", "count"],
+                data=[[c, train_counts[c]] for c in Config.CLASSES],
+            )})
+        except Exception:
+            pass
     
     train_loader = DataLoader(train_dataset, batch_size=Config.BATCH_SIZE, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_dataset, batch_size=Config.BATCH_SIZE, shuffle=False, num_workers=0)

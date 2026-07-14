@@ -111,6 +111,26 @@ def validate(model, loader, criterion):
             
     return running_loss / total, correct / total
 
+def _find_checkpoint(model_name):
+    """Find the best available checkpoint. Returns (path, source) or (None, None)."""
+    local_path = Config.get_model_path(model_name)
+    if os.path.exists(local_path):
+        return local_path, "local"
+    if Config.HF_AUTO_SYNC:
+        try:
+            from huggingface_hub import hf_hub_download
+            hub_path = hf_hub_download(
+                repo_id=Config.HF_MODEL_REPO,
+                filename=f"{model_name}_best.pth",
+                repo_type="model",
+            )
+            if hub_path:
+                return hub_path, "hub"
+        except Exception:
+            pass
+    return None, None
+
+
 def run_training(model_name=None, fold=None):
     model_name = model_name or Config.MODEL_NAME
     train_loader, val_loader, test_loader = get_dataloaders(fold=fold)
@@ -127,6 +147,18 @@ def run_training(model_name=None, fold=None):
     train_losses, val_losses = [], []
     train_accs, val_accs = [], []
     
+    # Checkpoint resume detection
+    resumed_from = None
+    if Config.RESUME_ENABLED and fold is None:
+        ckpt_path, ckpt_source = _find_checkpoint(model_name)
+        if ckpt_path is not None:
+            print(f"Found existing checkpoint at {ckpt_path} (source: {ckpt_source})", flush=True)
+            resume = input(f"Resume training from checkpoint? (Y/n): ").strip().lower()
+            if resume not in ("n", "no"):
+                model.load_state_dict(torch.load(ckpt_path, map_location=Config.DEVICE))
+                resumed_from = {"source": ckpt_source, "path": ckpt_path}
+                print(f"Resumed from {ckpt_source} checkpoint. Skipping warmup phase.", flush=True)
+    
     # wandb init
     if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
         run_name = f"{model_name}-{time.strftime('%Y%m%d-%H%M%S')}"
@@ -136,6 +168,7 @@ def run_training(model_name=None, fold=None):
             name=run_name,
             config={
                 "model": model_name,
+                "resumed_from": resumed_from["source"] if resumed_from else None,
                 "batch_size": Config.BATCH_SIZE,
                 "lr_warmup": Config.LEARNING_RATE,
                 "lr_finetune": Config.FINE_TUNE_LR,
@@ -152,37 +185,43 @@ def run_training(model_name=None, fold=None):
         wandb.watch(model, log="gradients", log_freq=10)
     
     fold_tag = f" [Fold {fold}]" if fold is not None else ""
-    # Phase 1: Warmup
-    n_batches = len(train_loader)
-    print(f"--- Phase 1: Warmup Training{fold_tag} ({n_batches} batches/epoch) ---", flush=True)
-    optimizer = optim.AdamW(_get_classifier(model, model_name).parameters(), lr=Config.LEARNING_RATE)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode="min", factor=Config.SCHEDULER_FACTOR,
-        patience=Config.SCHEDULER_PATIENCE, min_lr=Config.SCHEDULER_MIN_LR
-    )
     best_val_loss = float("inf")
     early_stop_counter = 0
 
-    for epoch in range(Config.EPOCHS_WARMUP):
-        train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, f"Warmup {epoch+1}/{Config.EPOCHS_WARMUP}")
-        val_loss, val_acc = validate(model, val_loader, criterion)
-        train_losses.append(train_loss)
-        val_losses.append(val_loss)
-        train_accs.append(train_acc)
-        val_accs.append(val_acc)
-        current_lr = optimizer.param_groups[0]["lr"]
-        print(f"Warmup Epoch {epoch+1}/{Config.EPOCHS_WARMUP} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f} | LR: {current_lr:.2e}", flush=True)
-        scheduler.step(val_loss)
-        if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
-            wandb.log({
-                "phase": "warmup",
-                "epoch": epoch + 1,
-                "train_loss": train_loss,
-                "val_loss": val_loss,
-                "train_acc": train_acc,
-                "val_acc": val_acc,
-                "learning_rate": current_lr,
-            })
+    # Phase 1: Warmup (skip if resumed from checkpoint)
+    if resumed_from is not None:
+        print(f"--- Skipping Warmup{fold_tag} (resumed from checkpoint) ---", flush=True)
+        unfreeze_for_finetune(model, model_name)
+        optimizer = optim.AdamW(model.parameters(), lr=Config.FINE_TUNE_LR)
+    else:
+        n_batches = len(train_loader)
+        print(f"--- Phase 1: Warmup Training{fold_tag} ({n_batches} batches/epoch) ---", flush=True)
+        optimizer = optim.AdamW(_get_classifier(model, model_name).parameters(), lr=Config.LEARNING_RATE)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="min", factor=Config.SCHEDULER_FACTOR,
+            patience=Config.SCHEDULER_PATIENCE, min_lr=Config.SCHEDULER_MIN_LR
+        )
+
+        for epoch in range(Config.EPOCHS_WARMUP):
+            train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, f"Warmup {epoch+1}/{Config.EPOCHS_WARMUP}")
+            val_loss, val_acc = validate(model, val_loader, criterion)
+            train_losses.append(train_loss)
+            val_losses.append(val_loss)
+            train_accs.append(train_acc)
+            val_accs.append(val_acc)
+            current_lr = optimizer.param_groups[0]["lr"]
+            print(f"Warmup Epoch {epoch+1}/{Config.EPOCHS_WARMUP} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f} | LR: {current_lr:.2e}", flush=True)
+            scheduler.step(val_loss)
+            if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
+                wandb.log({
+                    "phase": "warmup",
+                    "epoch": epoch + 1,
+                    "train_loss": train_loss,
+                    "val_loss": val_loss,
+                    "train_acc": train_acc,
+                    "val_acc": val_acc,
+                    "learning_rate": current_lr,
+                })
         
     # Phase 2: Fine-tuning
     print("--- Phase 2: Fine-Tuning Training ---", flush=True)
@@ -249,6 +288,7 @@ def run_training(model_name=None, fold=None):
         "train_losses": train_losses,
         "val_losses": val_losses,
         "fold": fold,
+        "resumed_from": resumed_from,
     }
 
 def run_kfold(model_name=None):
@@ -281,6 +321,28 @@ def run_kfold(model_name=None):
         print(f"  Fold {k}: val_loss={r['best_val_loss']:.4f} val_acc={r['best_val_acc']:.4f}")
     print(f"  Average: val_loss={avg_val_loss:.4f} val_acc={avg_val_acc:.4f} ± {std_val_acc:.4f}")
     print(f"{'='*60}", flush=True)
+
+    # Log to wandb
+    if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
+        try:
+            wandb.init(
+                project=Config.WANDB_PROJECT_KFOLD,
+                entity=Config.WANDB_ENTITY,
+                name=f"kfold-{model_name}-{time.strftime('%Y%m%d-%H%M%S')}",
+                config={"model": model_name, "n_folds": Config.N_FOLDS},
+            )
+            table = wandb.Table(columns=["fold", "val_loss", "val_acc"])
+            for k, r in enumerate(fold_results):
+                table.add_data(k, round(r["best_val_loss"], 4), round(r["best_val_acc"], 4))
+            wandb.log({"per_fold_table": table})
+            wandb.log({
+                "avg_val_loss": avg_val_loss,
+                "avg_val_acc": avg_val_acc,
+                "std_val_acc": std_val_acc,
+            })
+            wandb.finish()
+        except Exception:
+            pass
 
     return {
         "fold_results": fold_results,

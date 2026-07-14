@@ -1,8 +1,16 @@
 import os
 import sys
+import time
 import torch
 import numpy as np
 from src.config import Config
+
+try:
+    import wandb
+    _WANDB_AVAILABLE = True
+except ModuleNotFoundError:
+    wandb = None
+    _WANDB_AVAILABLE = False
 
 CLASS_PROMPTS = {
     "Cracks": "close-up of a single hairline crack on asphalt road surface, high resolution, realistic",
@@ -62,10 +70,47 @@ def generate_synthetic():
                 print(f"  {class_name}: {i + 1}/{needed}")
 
     print(f"\nSynthetic dataset generated in {Config.SYNTHETIC_DIR}")
+    class_counts = {}
     for class_name in Config.CLASSES:
         class_dir = os.path.join(Config.SYNTHETIC_DIR, class_name)
         count = len([f for f in os.listdir(class_dir) if f.lower().endswith((".png", ".jpg", ".jpeg"))]) if os.path.isdir(class_dir) else 0
+        class_counts[class_name] = count
         print(f"  {class_name}: {count} images")
+
+    # Log to wandb
+    if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
+        try:
+            wandb.init(
+                project=Config.WANDB_PROJECT_SYNTH,
+                entity=Config.WANDB_ENTITY,
+                name=f"synth-{time.strftime('%Y%m%d-%H%M%S')}",
+                config={"per_class_target": num_images_per_class},
+            )
+            wandb.log({"per_class_count": wandb.Table(
+                columns=["class", "count"],
+                data=[[c, class_counts[c]] for c in Config.CLASSES],
+            )})
+            # Log a sample grid
+            sample_images = []
+            for class_name in Config.CLASSES:
+                class_dir = os.path.join(Config.SYNTHETIC_DIR, class_name)
+                if os.path.isdir(class_dir):
+                    imgs = sorted([f for f in os.listdir(class_dir) if f.lower().endswith((".png", ".jpg", ".jpeg"))])
+                    if imgs:
+                        from PIL import Image
+                        sample_images.append(Image.open(os.path.join(class_dir, imgs[0])).convert("RGB"))
+            if len(sample_images) == len(Config.CLASSES):
+                import matplotlib.pyplot as plt
+                fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+                for i, (cls, img) in enumerate(zip(Config.CLASSES, sample_images)):
+                    axes[i].imshow(img)
+                    axes[i].set_title(cls)
+                    axes[i].axis("off")
+                wandb.log({"sample_grid": wandb.Image(fig)})
+                plt.close(fig)
+            wandb.finish()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

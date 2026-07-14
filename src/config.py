@@ -69,6 +69,8 @@ class Config:
 
     @staticmethod
     def get_model_path(model_name=None):
+        if model_name:
+            return os.path.join(Config.MODELS_DIR, f"{model_name}_best.pth")
         return os.path.join(Config.MODELS_DIR, "best_model.pth")
     
     # Pothole priority (class index 2) — extra weight multiplier
@@ -78,6 +80,10 @@ class Config:
     SYNTHETIC_DIR = "data/synthetic"
     SYNTHETIC_ENABLED = False
     SYNTHETIC_FACTOR = 1.0  # multiplier relative to real data per class
+
+    # Model resume / checkpoint detection
+    RESUME_ENABLED = True  # auto-detect and resume from existing checkpoints
+    HF_AUTO_SYNC = False   # auto-download/push models from HF Hub
 
     # Knowledge Distillation
     DISTILL_TEACHERS = ["resnet50", "efficientnet_b0", "vit_b_16"]
@@ -89,7 +95,11 @@ class Config:
     # Weights & Biases
     WANDB_ENABLED = False
     WANDB_PROJECT = "surface-crack-detection"
+    WANDB_PROJECT_KFOLD = "surface-crack-detection-kfold"
+    WANDB_PROJECT_DISTILL = "surface-crack-detection-distill"
+    WANDB_PROJECT_SYNTH = "surface-crack-detection-synthetic"
     WANDB_ENTITY = None
+    WANDB_LOG_PER_MODEL = True  # separate run per model
 
     # HuggingFace Hub
     HF_MODEL_REPO = "amruthjakku/surface-crack-detection-model"

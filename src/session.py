@@ -69,7 +69,7 @@ class SessionTracker:
         return "\n".join(lines)
 
     @staticmethod
-    def build_entry(model_name, metrics=None, status="ok", error=None):
+    def build_entry(model_name, metrics=None, status="ok", error=None, resumed_from=None):
         entry = {
             "status": status,
         }
@@ -77,6 +77,8 @@ class SessionTracker:
             entry.update(metrics)
         if error:
             entry["error"] = str(error)[:200]
+        if resumed_from:
+            entry["resumed_from"] = resumed_from
         model_path = Config.get_model_path(model_name)
         if os.path.exists(model_path):
             entry["size_mb"] = round(os.path.getsize(model_path) / (1024 * 1024), 1)

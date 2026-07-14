@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -11,6 +12,13 @@ from src.dataset import get_dataloaders
 from src.model import get_model
 from src.train import validate, calculate_class_weights, mixup_data
 from src.utils import plot_training_curves
+
+try:
+    import wandb
+    _WANDB_AVAILABLE = True
+except ModuleNotFoundError:
+    wandb = None
+    _WANDB_AVAILABLE = False
 
 
 def load_teacher(model_name, device):
@@ -92,6 +100,21 @@ def run_distillation(model_name=None):
     total_epochs = Config.DISTILL_EPOCHS
     print(f"--- Distillation Training ({total_epochs} epochs, T={temperature}, alpha={alpha}) ---", flush=True)
 
+    # wandb init
+    if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
+        wandb.init(
+            project=Config.WANDB_PROJECT_DISTILL,
+            entity=Config.WANDB_ENTITY,
+            name=f"distill-{model_name}-{time.strftime('%Y%m%d-%H%M%S')}",
+            config={
+                "student": model_name,
+                "teachers": Config.DISTILL_TEACHERS,
+                "temperature": temperature,
+                "alpha": alpha,
+                "epochs": total_epochs,
+            },
+        )
+
     for epoch in range(total_epochs):
         student.train()
         running_loss = 0.0
@@ -137,6 +160,16 @@ def run_distillation(model_name=None):
         current_lr = optimizer.param_groups[0]["lr"]
         print(f"Epoch {epoch+1}/{total_epochs} | Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f} Acc: {val_acc:.4f} | LR: {current_lr:.2e}", flush=True)
 
+        if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
+            wandb.log({
+                "epoch": epoch + 1,
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                "train_acc": train_acc,
+                "val_acc": val_acc,
+                "learning_rate": current_lr,
+            })
+
         scheduler.step(val_loss)
 
         student_path = os.path.join(Config.MODELS_DIR, f"student_{model_name}.pth")
@@ -155,6 +188,10 @@ def run_distillation(model_name=None):
     curves_path = os.path.join(Config.REPORTS_DIR, f"distillation_curves_{model_name}.png")
     plot_training_curves(train_losses, val_losses, train_accs, val_accs, curves_path)
     print(f"Saved training curves to {curves_path}", flush=True)
+
+    if _WANDB_AVAILABLE and Config.WANDB_ENABLED:
+        wandb.log({"distillation_curves": wandb.Image(curves_path)})
+        wandb.finish()
 
     return {
         "best_val_loss": best_val_loss,

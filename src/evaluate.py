@@ -94,6 +94,19 @@ def run_evaluation(model_name=None):
             "confusion_matrix": wandb.Image(cm_path),
         })
         wandb.log({"classification_report": wandb.Html(report.replace("\n", "<br>"))})
+        # Per-class metrics table
+        report_dict = classification_report(y_true, y_pred, target_names=Config.CLASSES, zero_division=0, output_dict=True)
+        per_class_table = wandb.Table(columns=["class", "precision", "recall", "f1", "support"])
+        for cls in Config.CLASSES:
+            if cls in report_dict:
+                per_class_table.add_data(
+                    cls,
+                    round(report_dict[cls]["precision"], 4),
+                    round(report_dict[cls]["recall"], 4),
+                    round(report_dict[cls]["f1-score"], 4),
+                    int(report_dict[cls]["support"]),
+                )
+        wandb.log({"per_class_metrics": per_class_table})
         wandb.finish()
 
     # Return metrics for session tracking
