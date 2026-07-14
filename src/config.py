@@ -93,12 +93,12 @@ class Config:
     DISTILL_EPOCHS = 20
     
     # Weights & Biases
-    WANDB_ENABLED = False
+    WANDB_ENABLED = True
     WANDB_PROJECT = "surface-crack-detection"
     WANDB_PROJECT_KFOLD = "surface-crack-detection-kfold"
     WANDB_PROJECT_DISTILL = "surface-crack-detection-distill"
     WANDB_PROJECT_SYNTH = "surface-crack-detection-synthetic"
-    WANDB_ENTITY = None
+    WANDB_ENTITY = "amruthjakku-astrivya"
     WANDB_LOG_PER_MODEL = True  # separate run per model
 
     # HuggingFace Hub
