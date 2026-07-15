@@ -37,6 +37,9 @@
 | Day 11 | Sprint execution | Traning model, assisted team | Added rule based c2r estimator| Assisted Bo and coordinated with the team | Updated UI into Gradio and solved issues | trained model and coordinated with team |
 | Day 12 | Sprint execution | Traning model,changed Ui  | Conducted standup and solved issues of c2r | Assisted Bo and coordinated with the team | Model trainng and solved issues | Audit report and solved issues|
 | Day 13 | Sprint execution | Traning model,changed Ui  | Model training and coordinated with team | Assisted Bo and coordinated with the team | Model trainng and solved issues | Model training and coordinated with team |
+| Day 13 | Sprint execution | Traning model,changed Ui  | Model training and coordinated with team | Assisted Bo and coordinated with the team | Model trainng and solved issues | Model training and coordinated with team |
+| Day 14| Sprint execution | Traning model,changed Ui  | Model training and coordinated with team | Assisted Bo and coordinated with the team | Model trainng and solved issues | Model training and coordinated with team |
+| Day 15 | Sprint execution | Final product deployed | Conducted sprint retrospective | Discussed and finalized product | Discussed and finalized product | Discussed and finalized the product |
 
 
 ## Scrum Master's Responsibilities
@@ -63,7 +66,8 @@
 | Database Schema | ✅ Completed |
 | Dataset Analysis | ✅ Completed |
 | Model Training | ✅ Completed |
+| Final product deployed |✅ Completed |
 
 ---
 
-**Last Updated:** Day 13
+**Last Updated:** Day 15
