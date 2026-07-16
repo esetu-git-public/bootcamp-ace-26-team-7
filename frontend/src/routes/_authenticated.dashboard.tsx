@@ -1,11 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScanSearch, TrendingUp, Activity, AlertTriangle, ArrowRight } from "lucide-react";
+
 
 import { useAuth, getHistory, type HistoryEntry } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SeverityBadge } from "@/components/SeverityBadge";
+import { Switch } from "@/components/ui/switch";
+
+
+import {
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip
+} from "recharts";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -28,6 +41,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const { user } = useAuth();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [showPersonal, setShowPersonal] = useState(false);
 
   useEffect(() => {
     if (user) setHistory(getHistory(user.id));
@@ -37,7 +51,44 @@ function Dashboard() {
   const avgSev = total ? history.reduce((s, h) => s + h.severity_score, 0) / total : 0;
   const highCount = history.filter((h) => h.severity_label === "High").length;
   const last = history[0];
+  const personalHistogram = useMemo(() => {
+    const counts: Record<string, number> = {
+        Cracks: 0,
+        Patch: 0,
+        Potholes: 0,
+        "Surface Defects": 0,
+    };
 
+    history.forEach((h) => {
+        if (h.predicted_class in counts) {
+            counts[h.predicted_class] += 1;
+        }
+    });
+
+    return Object.entries(counts).map(([defect, count]) => ({
+        defect,
+        count,
+    }));
+}, [history]);
+
+  const publicHistogram = [
+    { defect: "Cracks", count: 42 },
+    { defect: "Patch", count: 19 },
+    { defect: "Potholes", count: 96 },
+    { defect: "Surface Defects", count: 28 },
+  ];
+
+  const chartData = showPersonal
+    ? personalHistogram
+    : publicHistogram;
+
+  const chartTitle = showPersonal
+      ? "Personal Comparison"
+      : "Public Comparison";
+
+  const chartColor = showPersonal
+      ? "#22C55E"
+      : "#7C5CFC";
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -75,7 +126,32 @@ function Dashboard() {
         />
       </div>
 
+     
       <Card className="p-6">
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">{chartTitle}</h2>
+            <p className="text-sm text-muted-foreground">
+              {showPersonal ? "Showing your prediction history" : "Showing public benchmark data"}
+            </p>
+          </div>
+
+          <Switch checked={showPersonal} onCheckedChange={setShowPersonal} />
+        </div>
+
+        <div className="h-72">
+          <ResponsiveContainer>
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="defect" />
+              <YAxis />
+              <Tooltip cursor={{ fill: "transparent" }} />
+              <Bar dataKey="count" fill={chartColor} radius={[8, 8, 0, 0]} animationDuration={800} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Recent activity</h2>
           {last && (
