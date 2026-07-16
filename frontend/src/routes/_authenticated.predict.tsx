@@ -135,6 +135,19 @@ function PredictPage() {
                 <SeverityBadge label={result.severity_label} />
               </div>
 
+              {result.pdf_path && (
+                <div className="mt-4">
+                  <a
+                    href={`http://localhost:8501/api/report?path=${encodeURIComponent(result.pdf_path)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition"
+                  >
+                    📄 Download Inspection Report
+                  </a>
+                </div>
+              )}
+
               <div>
                 <div className="flex justify-between text-sm mb-1.5">
                   <span className="text-muted-foreground">Confidence</span>

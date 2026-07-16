@@ -3,6 +3,7 @@ import os
 import logging
 import numpy as np
 from PIL import Image
+from backend.pdf_generator import generate_pdf
 from backend.cost import estimate_repair_cost, estimate_repair_time
 
 logger = logging.getLogger(__name__)
@@ -208,6 +209,14 @@ def _tta_predict(models, input_tensor):
 
 
 def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
+    import os
+
+    os.makedirs("temp", exist_ok=True)
+
+    image_path = os.path.join("temp", filename)
+
+    with open(image_path, "wb") as f:
+        f.write(image_bytes)
     model, transform = get_active_model()
 
     if model is not None:
@@ -258,5 +267,17 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
     else:
         result["repair_cost"] = None
         result["repair_time"] = None
+
+
+    pdf_path = generate_pdf(
+        image_path=image_path,
+        prediction=predicted_class,
+        confidence=confidence,
+        severity=severity_label,
+        repair_cost=result["repair_cost"],
+        repair_time=result["repair_time"],
+    )
+
+    result["pdf_path"] = pdf_path
 
     return result
