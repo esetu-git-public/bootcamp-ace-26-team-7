@@ -51,48 +51,48 @@
 
 :root {
   --radius: 0.625rem;
-  --background: #0B0D15;
-  --foreground: #E4E4ED;
-  --card: #12141F;
-  --card-foreground: #E4E4ED;
-  --popover: #12141F;
-  --popover-foreground: #E4E4ED;
-  --primary: #6366F1;
-  --primary-foreground: #FFFFFF;
-  --secondary: #1A1D2E;
-  --secondary-foreground: #E4E4ED;
-  --muted: #1A1D2E;
-  --muted-foreground: #6B6D82;
-  --accent: #1A1D2E;
-  --accent-foreground: #E4E4ED;
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  --success: #22C55E;
-  --warning: #EAB308;
+  --background: #0b0d15;
+  --foreground: #e4e4ed;
+  --card: #12141f;
+  --card-foreground: #e4e4ed;
+  --popover: #12141f;
+  --popover-foreground: #e4e4ed;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --secondary: #1a1d2e;
+  --secondary-foreground: #e4e4ed;
+  --muted: #1a1d2e;
+  --muted-foreground: #6b6d82;
+  --accent: #1a1d2e;
+  --accent-foreground: #e4e4ed;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #22c55e;
+  --warning: #eab308;
   --border: #232636;
   --input: #232636;
-  --ring: #6366F1;
-  --chart-1: #6366F1;
-  --chart-2: #8B5CF6;
-  --chart-3: #22C55E;
-  --chart-4: #EAB308;
-  --chart-5: #EF4444;
-  --sidebar: #12141F;
-  --sidebar-foreground: #E4E4ED;
-  --sidebar-primary: #6366F1;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1A1D2E;
-  --sidebar-accent-foreground: #E4E4ED;
+  --ring: #6366f1;
+  --chart-1: #6366f1;
+  --chart-2: #8b5cf6;
+  --chart-3: #22c55e;
+  --chart-4: #eab308;
+  --chart-5: #ef4444;
+  --sidebar: #12141f;
+  --sidebar-foreground: #e4e4ed;
+  --sidebar-primary: #6366f1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a1d2e;
+  --sidebar-accent-foreground: #e4e4ed;
   --sidebar-border: #232636;
-  --sidebar-ring: #6366F1;
+  --sidebar-ring: #6366f1;
 }
 
 @utility bg-gradient-primary {
-  background-image: linear-gradient(135deg, #6366F1, #8B5CF6);
+  background-image: linear-gradient(135deg, #6366f1, #8b5cf6);
 }
 
 @utility text-gradient-primary {
-  background-image: linear-gradient(135deg, #6366F1, #8B5CF6);
+  background-image: linear-gradient(135deg, #6366f1, #8b5cf6);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

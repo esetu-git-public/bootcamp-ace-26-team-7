@@ -16,9 +16,17 @@ export const Route = createFileRoute("/_authenticated/predict")({
   head: () => ({
     meta: [
       { title: "Analyze Defect — CrackScan" },
-      { name: "description", content: "Upload a road or pavement image to detect cracks, patches, potholes, and surface defects." },
+      {
+        name: "description",
+        content:
+          "Upload a road or pavement image to detect cracks, patches, potholes, and surface defects.",
+      },
       { property: "og:title", content: "Analyze Defect — CrackScan" },
-      { property: "og:description", content: "Upload a road or pavement image to detect cracks, patches, potholes, and surface defects." },
+      {
+        property: "og:description",
+        content:
+          "Upload a road or pavement image to detect cracks, patches, potholes, and surface defects.",
+      },
     ],
   }),
   component: PredictPage,
@@ -68,7 +76,8 @@ function PredictPage() {
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Analyze Defect</h1>
         <p className="text-muted-foreground mt-1">
-          Upload a photo of pavement or road surface to classify the defect and estimate repair cost.
+          Upload a photo of pavement or road surface to classify the defect and estimate repair
+          cost.
         </p>
       </div>
 
@@ -112,7 +121,10 @@ function PredictPage() {
               <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center mb-3">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <p className="text-sm">Run an analysis to see the defect classification, severity, and repair estimates here.</p>
+              <p className="text-sm">
+                Run an analysis to see the defect classification, severity, and repair estimates
+                here.
+              </p>
             </div>
           ) : (
             <div className="space-y-5">
@@ -132,8 +144,16 @@ function PredictPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <MetricTile icon={<DollarSign className="h-4 w-4" />} label="Repair cost" value={result.repair_cost.display} />
-                <MetricTile icon={<Clock className="h-4 w-4" />} label="Repair time" value={result.repair_time.display} />
+                <MetricTile
+                  icon={<DollarSign className="h-4 w-4" />}
+                  label="Repair cost"
+                  value={result.repair_cost.display}
+                />
+                <MetricTile
+                  icon={<Clock className="h-4 w-4" />}
+                  label="Repair time"
+                  value={result.repair_time.display}
+                />
               </div>
 
               <div>
@@ -144,7 +164,13 @@ function PredictPage() {
                     return (
                       <div key={c}>
                         <div className="flex justify-between text-xs mb-1">
-                          <span className={c === result.predicted_class ? "font-medium" : "text-muted-foreground"}>{c}</span>
+                          <span
+                            className={
+                              c === result.predicted_class ? "font-medium" : "text-muted-foreground"
+                            }
+                          >
+                            {c}
+                          </span>
                           <span className="text-muted-foreground">{(p * 100).toFixed(1)}%</span>
                         </div>
                         <Progress value={p * 100} />
@@ -161,7 +187,15 @@ function PredictPage() {
   );
 }
 
-function MetricTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function MetricTile({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="rounded-lg border border-border bg-muted/30 p-3">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">

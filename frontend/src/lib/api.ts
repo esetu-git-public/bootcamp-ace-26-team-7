@@ -99,7 +99,10 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
 
   if (!res.ok) {
     const message =
-      (json && typeof json === "object" && "message" in json && typeof (json as { message: unknown }).message === "string"
+      (json &&
+      typeof json === "object" &&
+      "message" in json &&
+      typeof (json as { message: unknown }).message === "string"
         ? (json as { message: string }).message
         : null) ??
       (json && typeof json === "object" && "detail" in json
@@ -139,10 +142,8 @@ export interface SelectModelResponse {
 }
 
 export const api = {
-  modelStatus: () =>
-    apiFetch<ModelStatus>("/api/model/status"),
-  getModels: () =>
-    apiFetch<ModelsResponse>("/api/models"),
+  modelStatus: () => apiFetch<ModelStatus>("/api/model/status"),
+  getModels: () => apiFetch<ModelsResponse>("/api/models"),
   selectModel: (model_name: string) =>
     apiFetch<SelectModelResponse>("/api/model/select", {
       body: { model_name },
@@ -156,14 +157,10 @@ export const api = {
     }),
 
   githubStart: (redirectTo: string) =>
-    apiFetch<{ url: string }>(
-      `/api/auth/github?redirect_to=${encodeURIComponent(redirectTo)}`,
-    ),
+    apiFetch<{ url: string }>(`/api/auth/github?redirect_to=${encodeURIComponent(redirectTo)}`),
 
   githubCallback: (code: string) =>
-    apiFetch<AuthSuccess>(
-      `/api/auth/github/callback?code=${encodeURIComponent(code)}`,
-    ),
+    apiFetch<AuthSuccess>(`/api/auth/github/callback?code=${encodeURIComponent(code)}`),
 
   predict: (file: File, token: string) => {
     const fd = new FormData();

@@ -4,7 +4,8 @@ import type { SeverityLabel } from "@/lib/api";
 export function SeverityBadge({ label }: { label: SeverityLabel }) {
   const styles: Record<SeverityLabel, string> = {
     Low: "bg-[color:var(--success)]/15 text-[color:var(--success)] border-[color:var(--success)]/30",
-    Medium: "bg-[color:var(--warning)]/15 text-[color:var(--warning)] border-[color:var(--warning)]/30",
+    Medium:
+      "bg-[color:var(--warning)]/15 text-[color:var(--warning)] border-[color:var(--warning)]/30",
     High: "bg-destructive/15 text-destructive border-destructive/30",
   };
   return (

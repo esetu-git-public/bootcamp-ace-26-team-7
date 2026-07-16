@@ -37,9 +37,7 @@ export function ModelSelector() {
   }, []);
 
   useEffect(() => {
-    const hasLoading = models.some(
-      (m) => m.status === "loading" || (m.is_active && switching),
-    );
+    const hasLoading = models.some((m) => m.status === "loading" || (m.is_active && switching));
     if (!hasLoading) return;
     const interval = setInterval(fetchModels, 2000);
     return () => clearInterval(interval);
@@ -50,7 +48,9 @@ export function ModelSelector() {
     try {
       await api.selectModel(name);
       setActiveModel(name);
-    } catch {}
+    } catch {
+      /* selection error — model stays unchanged */
+    }
     fetchModels();
     setSwitching(false);
   };
@@ -60,11 +60,7 @@ export function ModelSelector() {
   return (
     <div className="flex items-center gap-2">
       <Cpu className="h-4 w-4 text-muted-foreground shrink-0" />
-      <Select
-        value={activeModel || undefined}
-        onValueChange={handleChange}
-        disabled={switching}
-      >
+      <Select value={activeModel || undefined} onValueChange={handleChange} disabled={switching}>
         <SelectTrigger className="w-[200px] h-8 text-xs">
           <SelectValue>
             {switching ? (
@@ -92,9 +88,7 @@ export function ModelSelector() {
                   className={`h-1.5 w-1.5 rounded-full shrink-0 ${STATUS_DOT[m.status] ?? "bg-gray-500"}`}
                 />
                 <span>{m.display_name}</span>
-                <span className="text-[10px] text-muted-foreground ml-auto">
-                  {m.size_mb}MB
-                </span>
+                <span className="text-[10px] text-muted-foreground ml-auto">{m.size_mb}MB</span>
               </span>
             </SelectItem>
           ))}

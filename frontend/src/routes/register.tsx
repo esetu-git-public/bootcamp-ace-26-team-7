@@ -14,9 +14,15 @@ export const Route = createFileRoute("/register")({
   head: () => ({
     meta: [
       { title: "Create account — CrackScan" },
-      { name: "description", content: "Create a CrackScan account to start analyzing surface defects." },
+      {
+        name: "description",
+        content: "Create a CrackScan account to start analyzing surface defects.",
+      },
       { property: "og:title", content: "Create account — CrackScan" },
-      { property: "og:description", content: "Create a CrackScan account to start analyzing surface defects." },
+      {
+        property: "og:description",
+        content: "Create a CrackScan account to start analyzing surface defects.",
+      },
     ],
   }),
   component: RegisterPage,
@@ -55,7 +61,11 @@ function RegisterPage() {
     setErrors({});
     setSubmitting(true);
     try {
-      const reg = await api.register(parsed.data.username, parsed.data.password, parsed.data.full_name);
+      const reg = await api.register(
+        parsed.data.username,
+        parsed.data.password,
+        parsed.data.full_name,
+      );
       if (!reg.success) throw new ApiError(0, reg.message ?? "Registration failed");
       toast.success("Account created. Please sign in.");
       navigate({ to: "/login", replace: true });
@@ -73,32 +83,64 @@ function RegisterPage() {
       footer={
         <span>
           Already have an account?{" "}
-          <Link to="/login" className="text-primary hover:underline">Sign in</Link>
+          <Link to="/login" className="text-primary hover:underline">
+            Sign in
+          </Link>
         </span>
       }
     >
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="full_name">Full name</Label>
-          <Input id="full_name" value={values.full_name} onChange={set("full_name")} placeholder="Jane Doe" />
+          <Input
+            id="full_name"
+            value={values.full_name}
+            onChange={set("full_name")}
+            placeholder="Jane Doe"
+          />
           {errors.full_name && <p className="text-xs text-destructive">{errors.full_name}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="username">Username</Label>
-          <Input id="username" type="text" autoComplete="username" value={values.username} onChange={set("username")} placeholder="jane_doe" />
+          <Input
+            id="username"
+            type="text"
+            autoComplete="username"
+            value={values.username}
+            onChange={set("username")}
+            placeholder="jane_doe"
+          />
           {errors.username && <p className="text-xs text-destructive">{errors.username}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" autoComplete="new-password" value={values.password} onChange={set("password")} placeholder="••••••••" />
+          <Input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            value={values.password}
+            onChange={set("password")}
+            placeholder="••••••••"
+          />
           {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirm">Confirm password</Label>
-          <Input id="confirm" type="password" autoComplete="new-password" value={values.confirm} onChange={set("confirm")} placeholder="••••••••" />
+          <Input
+            id="confirm"
+            type="password"
+            autoComplete="new-password"
+            value={values.confirm}
+            onChange={set("confirm")}
+            placeholder="••••••••"
+          />
           {errors.confirm && <p className="text-xs text-destructive">{errors.confirm}</p>}
         </div>
-        <Button type="submit" disabled={submitting} className="w-full bg-gradient-primary hover:opacity-90 text-white border-0">
+        <Button
+          type="submit"
+          disabled={submitting}
+          className="w-full bg-gradient-primary hover:opacity-90 text-white border-0"
+        >
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Account"}
         </Button>
       </form>
