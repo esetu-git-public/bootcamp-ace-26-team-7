@@ -1,14 +1,14 @@
 import os
 from datetime import datetime, timedelta, timezone
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Query
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from jose import JWTError, jwt
 from dotenv import load_dotenv
 from fastapi.responses import FileResponse
-import os
+
 
 from backend.auth import (
     login_user,
@@ -156,6 +156,7 @@ def github_callback(code: str = Query(...)):
 @app.post("/api/predict")
 async def predict_route(
     image: UploadFile = File(...),
+    currency: str = Form("USD"),
     token_payload: dict = Depends(verify_token),
 ):
     if not image.content_type or not image.content_type.startswith("image/"):
@@ -166,7 +167,7 @@ async def predict_route(
         raise HTTPException(status_code=400, detail="Empty file")
 
     try:
-        result = predict_image(contents, image.filename or "upload.jpg")
+        result = predict_image(contents, image.filename or "upload.jpg", currency=currency)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")

@@ -36,6 +36,12 @@ export interface MessageSuccess {
 export type DefectClass = "Cracks" | "Patch" | "Potholes" | "Surface Defects";
 export type SeverityLabel = "Low" | "Medium" | "High";
 
+export interface ActionPlan {
+  action: string;
+  priority: string;
+  steps: string[];
+}
+
 export interface PredictionResult {
   success: true;
   predicted_class: DefectClass;
@@ -43,9 +49,17 @@ export interface PredictionResult {
   class_probabilities: Record<DefectClass, number>;
   severity_score: number;
   severity_label: SeverityLabel;
-  repair_cost: { low: number; high: number; display: string; currency: string };
+  repair_cost: {
+    low: number;
+    high: number;
+    display: string;
+    currency: string;
+    usd_low: number;
+    usd_high: number;
+  };
   repair_time: { low: number; high: number; display: string; unit: string };
   pdf_path?: string;
+  action_plan: ActionPlan | null;
 }
 
 export class ApiError extends Error {
@@ -163,9 +177,10 @@ export const api = {
   githubCallback: (code: string) =>
     apiFetch<AuthSuccess>(`/api/auth/github/callback?code=${encodeURIComponent(code)}`),
 
-  predict: (file: File, token: string) => {
+  predict: (file: File, token: string, currency: string = "USD") => {
     const fd = new FormData();
     fd.append("image", file);
+    fd.append("currency", currency);
     return apiFetch<PredictionResult>("/api/predict", {
       method: "POST",
       formData: fd,

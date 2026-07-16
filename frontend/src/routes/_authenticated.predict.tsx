@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Sparkles, Clock, DollarSign, RotateCcw } from "lucide-react";
+import { Loader2, Sparkles, Clock, DollarSign, IndianRupee, RotateCcw } from "lucide-react";
 
 import { UploadDropzone } from "@/components/UploadDropzone";
 import { SeverityBadge } from "@/components/SeverityBadge";
@@ -39,12 +39,13 @@ function PredictPage() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currency, setCurrency] = useState<"USD" | "INR">("USD");
 
   const analyze = async () => {
     if (!file || !token) return;
     setLoading(true);
     try {
-      const res = await api.predict(file, token);
+      const res = await api.predict(file, token, currency);
       setResult(res);
       if (user) {
         addHistory(user.id, {
@@ -84,6 +85,19 @@ function PredictPage() {
       <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-2">
         <span className="text-xs text-muted-foreground">Model</span>
         <ModelSelector />
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-2">
+        <span className="text-xs text-muted-foreground">Currency</span>
+        <select
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value as "USD" | "INR")}
+          disabled={loading}
+          className="text-xs bg-transparent border border-border rounded-md px-2 py-1 focus:outline-none"
+        >
+          <option value="USD">USD ($)</option>
+          <option value="INR">INR (₹)</option>
+        </select>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -158,7 +172,7 @@ function PredictPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <MetricTile
-                  icon={<DollarSign className="h-4 w-4" />}
+                  icon={result.repair_cost.currency === "INR" ? <IndianRupee className="h-4 w-4" /> : <DollarSign className="h-4 w-4" />}
                   label="Repair cost"
                   value={result.repair_cost.display}
                 />

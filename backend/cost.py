@@ -1,4 +1,5 @@
 # backend/cost.py
+from backend.currency import convert_amount
 
 CURRENCY = "USD"
 
@@ -58,22 +59,28 @@ TIME_RANGES = {
     },
 }
 
+CURRENCY_SYMBOLS = {
+    "USD": "$",
+    "INR": "₹",
+    "EUR": "€",
+    "GBP": "£",
+}
+
+
 def narrow_range(low, high, confidence):
     """
     Shrinks the range from both ends as confidence increases.
     confidence = 1.0 -> tightest range (25% shrink from each end)
     confidence = 0.0 -> full original range
     """
-    shrink = (1 - confidence) * 0.5 if confidence <= 1 else 0
-    # invert so higher confidence = more shrink, capped at 25% each side
-    shrink_factor = (confidence) * 0.25  # 0 to 0.25
+    shrink_factor = confidence * 0.25  # 0 to 0.25
     range_span = high - low
     narrowed_low = low + range_span * shrink_factor
     narrowed_high = high - range_span * shrink_factor
     return round(narrowed_low), round(narrowed_high)
 
 
-def estimate_repair_cost(predicted_class, severity_label, confidence):
+def estimate_repair_cost(predicted_class, severity_label, confidence, currency="USD"):
     if predicted_class not in COST_RANGES:
         raise ValueError(f"Unknown defect type: {predicted_class}")
     if severity_label not in COST_RANGES[predicted_class]:
@@ -82,11 +89,19 @@ def estimate_repair_cost(predicted_class, severity_label, confidence):
     low, high = COST_RANGES[predicted_class][severity_label]
     narrowed_low, narrowed_high = narrow_range(low, high, confidence)
 
+    # Base values are always stored/computed in USD, then converted for display
+    currency = currency.upper()
+    converted_low = convert_amount(narrowed_low, currency, base_currency="USD")
+    converted_high = convert_amount(narrowed_high, currency, base_currency="USD")
+    symbol = CURRENCY_SYMBOLS.get(currency, currency + " ")
+
     return {
-        "low": narrowed_low,
-        "high": narrowed_high,
-        "display": f"${narrowed_low:,} - ${narrowed_high:,}",
-        "currency": CURRENCY,
+        "low": converted_low,
+        "high": converted_high,
+        "display": f"{symbol}{converted_low:,.0f} - {symbol}{converted_high:,.0f}",
+        "currency": currency,
+        "usd_low": narrowed_low,
+        "usd_high": narrowed_high,
     }
 
 
