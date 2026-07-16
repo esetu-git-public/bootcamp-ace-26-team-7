@@ -275,15 +275,17 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
         result["action_plan"] = None
 
 
-    pdf_path = generate_pdf(
-        image_path=image_path,
-        prediction=predicted_class,
-        confidence=confidence,
-        severity=severity_label,
-        repair_cost=result["repair_cost"],
-        repair_time=result["repair_time"],
-    )
-
-    result["pdf_path"] = pdf_path
+    try:
+        pdf_path = generate_pdf(
+            image_path=image_path,
+            prediction=predicted_class,
+            confidence=confidence,
+            severity=severity_label,
+            repair_cost=result["repair_cost"],
+            repair_time=result["repair_time"],
+        )
+        result["pdf_path"] = pdf_path
+    except Exception:
+        result["pdf_path"] = None
 
     return result

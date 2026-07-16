@@ -24,6 +24,7 @@ class TestFallbackPrediction:
             "success", "predicted_class", "confidence",
             "class_probabilities", "severity_score", "severity_label",
             "repair_cost", "repair_time", "action_plan",
+            "pdf_path",
         }
         assert set(result.keys()) == expected_keys
 
