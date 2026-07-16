@@ -29,3 +29,4 @@ huggingface_hub>=0.25.0
 wandb
 tqdm
 psutil
+reportlab>=4.0.0
