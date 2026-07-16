@@ -1,61 +1,75 @@
 # backend/cost.py
+
 from backend.currency import convert_amount
 
 CURRENCY = "USD"
 
-# Cost ranges: {defect_type: {severity: (low, high)}}
+# ---------------------------------------------------------
+# Estimated Repair Cost (USD)
+# Per SINGLE detected defect
+# ---------------------------------------------------------
+
 COST_RANGES = {
     "Cracks": {
-        "Low": (500, 1500),
-        "Medium": (1500, 3500),
-        "High": (3500, 6000),
-        "Critical": (6000, 12000),
+        "Low": (15, 35),          # Hairline crack
+        "Medium": (35, 70),       # Crack sealing
+        "High": (70, 150),        # Multiple/long cracks
+        "Critical": (150, 350),   # Structural cracking
     },
+
     "Patch": {
-        "Low": (1000, 2500),
-        "Medium": (2500, 5000),
-        "High": (5000, 8000),
-        "Critical": (8000, 15000),
+        "Low": (30, 60),          # Minor patch touch-up
+        "Medium": (60, 120),      # Patch replacement
+        "High": (120, 250),       # Failed patch replacement
+        "Critical": (250, 500),   # Base repair
     },
+
     "Potholes": {
-        "Low": (100, 500),
-        "Medium": (500, 2000),
-        "High": (2000, 5000),
-        "Critical": (5000, 10000),
+        "Low": (20, 40),          # Small pothole
+        "Medium": (40, 80),       # Medium pothole
+        "High": (80, 150),        # Large pothole
+        "Critical": (150, 350),   # Deep pothole reconstruction
     },
+
     "Surface Defects": {
-        "Low": (500, 2000),
-        "Medium": (2000, 5000),
-        "High": (5000, 10000),
-        "Critical": (10000, 20000),
+        "Low": (30, 70),          # Minor surface wear
+        "Medium": (70, 150),      # Surface treatment
+        "High": (150, 300),       # Small resurfacing
+        "Critical": (300, 700),   # Major resurfacing
     },
 }
 
-# Time ranges (in hours): {defect_type: {severity: (low_hrs, high_hrs)}}
+# ---------------------------------------------------------
+# Estimated Repair Time (Hours)
+# ---------------------------------------------------------
+
 TIME_RANGES = {
     "Cracks": {
-        "Low": (1, 3),
-        "Medium": (3, 8),
-        "High": (8, 24),
-        "Critical": (24, 72),
+        "Low": (1, 1),
+        "Medium": (1, 2),
+        "High": (2, 4),
+        "Critical": (4, 8),
     },
+
     "Patch": {
-        "Low": (2, 5),
-        "Medium": (5, 12),
-        "High": (12, 30),
-        "Critical": (30, 80),
-    },
-    "Potholes": {
         "Low": (1, 2),
-        "Medium": (2, 6),
-        "High": (6, 16),
-        "Critical": (16, 48),
+        "Medium": (2, 3),
+        "High": (3, 5),
+        "Critical": (5, 8),
     },
+
+    "Potholes": {
+        "Low": (1, 1),
+        "Medium": (1, 2),
+        "High": (2, 4),
+        "Critical": (4, 8),
+    },
+
     "Surface Defects": {
-        "Low": (2, 6),
-        "Medium": (6, 16),
-        "High": (16, 40),
-        "Critical": (40, 120),
+        "Low": (2, 4),
+        "Medium": (4, 8),
+        "High": (8, 12),
+        "Critical": (12, 24),
     },
 }
 
@@ -69,31 +83,58 @@ CURRENCY_SYMBOLS = {
 
 def narrow_range(low, high, confidence):
     """
-    Shrinks the range from both ends as confidence increases.
-    confidence = 1.0 -> tightest range (25% shrink from each end)
-    confidence = 0.0 -> full original range
+    confidence = 0.0 -> original range
+    confidence = 1.0 -> range narrowed by 25%
     """
-    shrink_factor = confidence * 0.25  # 0 to 0.25
-    range_span = high - low
-    narrowed_low = low + range_span * shrink_factor
-    narrowed_high = high - range_span * shrink_factor
+    confidence = max(0.0, min(confidence, 1.0))
+
+    shrink_factor = confidence * 0.25
+    span = high - low
+
+    narrowed_low = low + span * shrink_factor
+    narrowed_high = high - span * shrink_factor
+
     return round(narrowed_low), round(narrowed_high)
 
 
-def estimate_repair_cost(predicted_class, severity_label, confidence, currency="USD"):
+def estimate_repair_cost(
+    predicted_class,
+    severity_label,
+    confidence,
+    currency="USD",
+):
     if predicted_class not in COST_RANGES:
         raise ValueError(f"Unknown defect type: {predicted_class}")
+
     if severity_label not in COST_RANGES[predicted_class]:
         raise ValueError(f"Unknown severity level: {severity_label}")
 
     low, high = COST_RANGES[predicted_class][severity_label]
-    narrowed_low, narrowed_high = narrow_range(low, high, confidence)
 
-    # Base values are always stored/computed in USD, then converted for display
+    narrowed_low, narrowed_high = narrow_range(
+        low,
+        high,
+        confidence,
+    )
+
     currency = currency.upper()
-    converted_low = convert_amount(narrowed_low, currency, base_currency="USD")
-    converted_high = convert_amount(narrowed_high, currency, base_currency="USD")
-    symbol = CURRENCY_SYMBOLS.get(currency, currency + " ")
+
+    converted_low = convert_amount(
+        narrowed_low,
+        currency,
+        base_currency="USD",
+    )
+
+    converted_high = convert_amount(
+        narrowed_high,
+        currency,
+        base_currency="USD",
+    )
+
+    symbol = CURRENCY_SYMBOLS.get(
+        currency,
+        currency + " ",
+    )
 
     return {
         "low": converted_low,
@@ -105,16 +146,25 @@ def estimate_repair_cost(predicted_class, severity_label, confidence, currency="
     }
 
 
-def estimate_repair_time(predicted_class, severity_label, confidence):
+def estimate_repair_time(
+    predicted_class,
+    severity_label,
+    confidence,
+):
     if predicted_class not in TIME_RANGES:
         raise ValueError(f"Unknown defect type: {predicted_class}")
+
     if severity_label not in TIME_RANGES[predicted_class]:
         raise ValueError(f"Unknown severity level: {severity_label}")
 
     low, high = TIME_RANGES[predicted_class][severity_label]
-    narrowed_low, narrowed_high = narrow_range(low, high, confidence)
 
-    # convert to a readable display (hours vs days)
+    narrowed_low, narrowed_high = narrow_range(
+        low,
+        high,
+        confidence,
+    )
+
     if narrowed_high >= 24:
         display = f"{narrowed_low/24:.1f} - {narrowed_high/24:.1f} days"
         unit = "days"
