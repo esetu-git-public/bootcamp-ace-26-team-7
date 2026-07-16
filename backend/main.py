@@ -7,6 +7,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from jose import JWTError, jwt
 from dotenv import load_dotenv
+from fastapi.responses import FileResponse
+import os
 
 from backend.auth import (
     login_user,
@@ -235,3 +237,14 @@ def model_debug():
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/api/report")
+def download_report(path: str):
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    return FileResponse(
+        path,
+        media_type="application/pdf",
+        filename=os.path.basename(path),
+    )

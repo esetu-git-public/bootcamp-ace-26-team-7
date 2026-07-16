@@ -45,6 +45,7 @@ export interface PredictionResult {
   severity_label: SeverityLabel;
   repair_cost: { low: number; high: number; display: string; currency: string };
   repair_time: { low: number; high: number; display: string; unit: string };
+  pdf_path?: string;
 }
 
 export class ApiError extends Error {
