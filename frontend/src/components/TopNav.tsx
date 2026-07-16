@@ -33,8 +33,12 @@ export function TopNav() {
   const [activeModel, setActiveModel] = useState<string>("");
 
   useEffect(() => {
-    api.modelStatus()
-      .then(r => { setModelStatus(r.status); setActiveModel(r.active_model); })
+    api
+      .modelStatus()
+      .then((r) => {
+        setModelStatus(r.status);
+        setActiveModel(r.active_model);
+      })
       .catch(() => setModelStatus("unavailable"));
   }, []);
 
@@ -53,7 +57,9 @@ export function TopNav() {
           <div className="flex flex-col leading-tight">
             <span className="font-semibold tracking-tight">CrackScan</span>
             <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <span className={`h-1.5 w-1.5 rounded-full ${STATUS_COLORS[modelStatus] ?? "bg-gray-500"}`} />
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${STATUS_COLORS[modelStatus] ?? "bg-gray-500"}`}
+              />
               {modelStatus}
               {activeModel && <span className="ml-1 font-medium">{activeModel}</span>}
             </span>
@@ -91,7 +97,10 @@ export function TopNav() {
                 <User className="mr-2 h-4 w-4" /> Profile
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+            <DropdownMenuItem
+              onClick={handleSignOut}
+              className="text-destructive focus:text-destructive"
+            >
               <LogOut className="mr-2 h-4 w-4" /> Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

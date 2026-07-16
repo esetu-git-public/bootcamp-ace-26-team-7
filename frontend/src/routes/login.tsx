@@ -15,9 +15,15 @@ export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
       { title: "Sign in — CrackScan" },
-      { name: "description", content: "Sign in to your CrackScan account to analyze surface defects." },
+      {
+        name: "description",
+        content: "Sign in to your CrackScan account to analyze surface defects.",
+      },
       { property: "og:title", content: "Sign in — CrackScan" },
-      { property: "og:description", content: "Sign in to your CrackScan account to analyze surface defects." },
+      {
+        property: "og:description",
+        content: "Sign in to your CrackScan account to analyze surface defects.",
+      },
     ],
   }),
   component: LoginPage,
@@ -87,7 +93,9 @@ function LoginPage() {
       subtitle="Sign in to your CrackScan account"
       footer={
         <span>
-          <Link to="/register" className="text-primary hover:underline">Create account</Link>
+          <Link to="/register" className="text-primary hover:underline">
+            Create account
+          </Link>
         </span>
       }
     >

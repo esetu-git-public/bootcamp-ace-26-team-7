@@ -27,16 +27,10 @@ export function AuthCard({
             <Shield className="h-6 w-6 text-white" strokeWidth={2.4} />
           </div>
           <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
-          {subtitle && (
-            <p className="text-sm text-muted-foreground text-center">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-sm text-muted-foreground text-center">{subtitle}</p>}
         </div>
         {children}
-        {footer && (
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            {footer}
-          </div>
-        )}
+        {footer && <div className="mt-6 text-center text-sm text-muted-foreground">{footer}</div>}
       </div>
     </div>
   );

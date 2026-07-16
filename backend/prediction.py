@@ -6,6 +6,7 @@ from PIL import Image
 from backend.pdf_generator import generate_pdf
 from backend.cost import estimate_repair_cost, estimate_repair_time
 from backend.database import get_service_client
+from backend.actions import get_action_plan
 
 logger = logging.getLogger(__name__)
 
@@ -209,8 +210,7 @@ def _tta_predict(models, input_tensor):
     return np.mean(all_probs, axis=0)
 
 
-def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
-    import os
+def predict_image(image_bytes: bytes, filename: str = "upload.jpg", currency: str = "USD") -> dict:
 
     os.makedirs("temp", exist_ok=True)
 
@@ -260,14 +260,19 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
         "severity_label": severity_label,
     }
 
+    # Only estimate cost/time if we have a real prediction
+    # Only estimate cost/time/action if we have a real prediction
     if predicted_class in CLASS_SEVERITY:
-        cost_estimate = estimate_repair_cost(predicted_class, severity_label, confidence)
+        cost_estimate = estimate_repair_cost(predicted_class, severity_label, confidence, currency=currency)
         time_estimate = estimate_repair_time(predicted_class, severity_label, confidence)
+        action_plan = get_action_plan(predicted_class, severity_label)
         result["repair_cost"] = cost_estimate
         result["repair_time"] = time_estimate
+        result["action_plan"] = action_plan
     else:
         result["repair_cost"] = None
         result["repair_time"] = None
+        result["action_plan"] = None
 
 
     pdf_path = generate_pdf(
@@ -295,5 +300,19 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg") -> dict:
 
     except Exception as e:
         logger.warning(f"Failed to save prediction history: {e}")
+
+    return result
+    try:
+        pdf_path = generate_pdf(
+            image_path=image_path,
+            prediction=predicted_class,
+            confidence=confidence,
+            severity=severity_label,
+            repair_cost=result["repair_cost"],
+            repair_time=result["repair_time"],
+        )
+        result["pdf_path"] = pdf_path
+    except Exception:
+        result["pdf_path"] = None
 
     return result

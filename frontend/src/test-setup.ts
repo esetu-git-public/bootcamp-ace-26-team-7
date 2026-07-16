@@ -7,4 +7,3 @@ if (!Element.prototype.hasPointerCapture) {
 if (!Element.prototype.setPointerCapture) {
   Element.prototype.setPointerCapture = () => {};
 }
-
