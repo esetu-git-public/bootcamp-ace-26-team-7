@@ -6,7 +6,10 @@ from PIL import Image
 from backend.pdf_generator import generate_pdf
 from backend.cost import estimate_repair_cost, estimate_repair_time
 from backend.database import get_service_client
+<<<<<<< HEAD
 from backend.actions import get_action_plan
+=======
+>>>>>>> 9829128 (feat: implement dynamic public and personal comparison histograms)
 
 logger = logging.getLogger(__name__)
 
@@ -301,7 +304,6 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg", currency: st
     except Exception as e:
         logger.warning(f"Failed to save prediction history: {e}")
 
-    return result
     try:
         pdf_path = generate_pdf(
             image_path=image_path,
