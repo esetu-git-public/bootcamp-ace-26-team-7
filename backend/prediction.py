@@ -6,10 +6,7 @@ from PIL import Image
 from backend.pdf_generator import generate_pdf
 from backend.cost import estimate_repair_cost, estimate_repair_time
 from backend.database import get_service_client
-<<<<<<< HEAD
 from backend.actions import get_action_plan
-=======
->>>>>>> 9829128 (feat: implement dynamic public and personal comparison histograms)
 
 logger = logging.getLogger(__name__)
 
