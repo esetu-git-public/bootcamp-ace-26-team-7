@@ -8,6 +8,8 @@ from pydantic import BaseModel
 from jose import JWTError, jwt
 from dotenv import load_dotenv
 from fastapi.responses import FileResponse
+from backend.database import get_service_client
+import os
 
 
 from backend.auth import (
@@ -234,6 +236,33 @@ def model_debug():
     info["ml"] = ml
     return info
 
+@app.get("/api/analytics/public")
+def public_histogram():
+    supabase = get_service_client()
+
+    rows = (
+        supabase
+        .table("prediction_history")
+        .select("predicted_class")
+        .execute()
+    )
+
+    counts = {
+        "Cracks": 0,
+        "Patch": 0,
+        "Potholes": 0,
+        "Surface Defects": 0,
+    }
+
+    for row in rows.data:
+        defect = row["predicted_class"]
+        if defect in counts:
+            counts[defect] += 1
+
+    return [
+        {"defect": key, "count": value}
+        for key, value in counts.items()
+    ]
 
 @app.get("/api/health")
 def health():

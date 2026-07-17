@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from backend.pdf_generator import generate_pdf
 from backend.cost import estimate_repair_cost, estimate_repair_time
+from backend.database import get_service_client
 from backend.actions import get_action_plan
 
 logger = logging.getLogger(__name__)
@@ -273,6 +274,32 @@ def predict_image(image_bytes: bytes, filename: str = "upload.jpg", currency: st
         result["repair_time"] = None
         result["action_plan"] = None
 
+
+    pdf_path = generate_pdf(
+        image_path=image_path,
+        prediction=predicted_class,
+        confidence=confidence,
+        severity=severity_label,
+        repair_cost=result["repair_cost"],
+        repair_time=result["repair_time"],
+    )
+
+    result["pdf_path"] = pdf_path
+
+    try:
+        supabase = get_service_client()
+
+        supabase.table("prediction_history").insert({
+            "predicted_class": predicted_class,
+            "confidence": confidence,
+            "severity_label": severity_label,
+            "severity_score": severity_score,
+            "repair_cost": result["repair_cost"]["display"] if result["repair_cost"] else None,
+            "repair_time": result["repair_time"]["display"] if result["repair_time"] else None,
+        }).execute()
+
+    except Exception as e:
+        logger.warning(f"Failed to save prediction history: {e}")
 
     try:
         pdf_path = generate_pdf(

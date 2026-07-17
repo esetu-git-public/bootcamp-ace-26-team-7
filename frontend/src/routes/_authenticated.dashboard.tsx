@@ -39,13 +39,27 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
-  const { user } = useAuth();
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [showPersonal, setShowPersonal] = useState(false);
+    const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) setHistory(getHistory(user.id));
-  }, [user]);
+    const [history, setHistory] = useState<HistoryEntry[]>([]);
+
+    const [publicHistogram, setPublicHistogram] = useState<
+      { defect: string; count: number }[]
+    >([]);
+
+    const [showPersonal, setShowPersonal] = useState(false);
+    useEffect(() => {
+
+        if (user) {
+            setHistory(getHistory(user.id));
+        }
+
+        fetch("http://localhost:8501/api/analytics/public")
+            .then((res) => res.json())
+            .then((data) => setPublicHistogram(data))
+            .catch(console.error);
+
+    }, [user]);
 
   const total = history.length;
   const avgSev = total ? history.reduce((s, h) => s + h.severity_score, 0) / total : 0;
@@ -71,12 +85,6 @@ function Dashboard() {
     }));
 }, [history]);
 
-  const publicHistogram = [
-    { defect: "Cracks", count: 42 },
-    { defect: "Patch", count: 19 },
-    { defect: "Potholes", count: 96 },
-    { defect: "Surface Defects", count: 28 },
-  ];
 
   const chartData = showPersonal
     ? personalHistogram
@@ -127,7 +135,6 @@ function Dashboard() {
       </div>
 
      
-      <Card className="p-6">
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -191,11 +198,10 @@ function Dashboard() {
             ))}
           </ul>
         )}
-      </Card>
     </div>
   );
-}
 
+}
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <Card className="p-5">
