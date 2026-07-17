@@ -13,8 +13,10 @@ from fastapi.responses import FileResponse
 from backend.auth import (
     login_user,
     register_user,
-    get_github_login_url,
-    complete_github_login,
+)
+from backend.feedback import (
+    submit_feedback,
+    get_feedback_stats,
 )
 from backend.prediction import (
     predict_image,
@@ -104,6 +106,12 @@ class RegisterRequest(BaseModel):
     password: str
     full_name: str
 
+class FeedbackRequest(BaseModel):
+    predicted_class: str
+    confidence: float
+    rating: int
+    comment: str = ""
+
 
 # --- Auth routes (always return 200; body.success tells the real outcome) ---
 
@@ -128,27 +136,17 @@ def register_route(req: RegisterRequest):
     return register_user(req.username, req.password, req.full_name)
 
 
-@app.get("/api/auth/github")
-def github_start(redirect_to: str = Query(...)):
-    try:
-        url = get_github_login_url(redirect_to)
-        return {"url": url}
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"GitHub OAuth setup failed: {e}")
+# --- Feedback (requires valid JWT) ---
+
+@app.post("/api/feedback")
+def feedback_route(req: FeedbackRequest, token_payload: dict = Depends(verify_token)):
+    user_id = token_payload["sub"]
+    return submit_feedback(user_id, req.predicted_class, req.confidence, req.rating, req.comment)
 
 
-@app.get("/api/auth/github/callback")
-def github_callback(code: str = Query(...)):
-    try:
-        result = complete_github_login(code)
-        token = create_jwt_token(result["user"]["id"], result["user"]["username"])
-        return {
-            "success": True,
-            "access_token": token,
-            "user": result["user"],
-        }
-    except Exception as e:
-        return {"success": False, "message": f"GitHub login failed: {e}"}
+@app.get("/api/feedback/stats")
+def feedback_stats(token_payload: dict = Depends(verify_token)):
+    return get_feedback_stats()
 
 
 # --- Prediction (requires valid JWT) ---
@@ -234,6 +232,18 @@ def model_debug():
     info["ml"] = ml
     return info
 
+
+@app.get("/api/stats/overview")
+def stats_overview():
+    return {
+        "defect_distribution": [
+            {"defect": "Cracks", "count": 73},
+            {"defect": "Patch", "count": 42},
+            {"defect": "Potholes", "count": 91},
+            {"defect": "Surface Defects", "count": 100},
+        ],
+        "total": 306,
+    }
 
 @app.get("/api/health")
 def health():
