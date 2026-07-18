@@ -258,7 +258,7 @@ See **Model Performance Comparison** table above for all training runs tracked v
 
 <div align="center">
 
-Built with ❤️ by **Team 7 — ACE Bootcamp**
+Built with 🩵 by **Team 7 — ACE Bootcamp**
 
 </div>
 ```
