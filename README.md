@@ -27,7 +27,7 @@ pinned: false
 
 ## 📋 Overview
 
-A multi-class classifier that detects **4 types of surface defects** from images using transfer learning (ResNet50, EfficientNet-B0, ViT-B/16) with optional ensemble inference.
+A multi-class classifier that detects **4 types of surface defects** from images using transfer learning (ResNet50, EfficientNet-B0, ViT-B/16) with optional ensemble inference
 
 | Defect Class        | Samples | % of Dataset |
 | :------------------ | ------: | :----------: |
